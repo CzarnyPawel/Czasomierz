@@ -120,6 +120,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTH_USER_MODEL = 'Czasomierz_app.User'
+
 try:
     from Czasomierz.local_settings import DATABASES
 except ModuleNotFoundError:
