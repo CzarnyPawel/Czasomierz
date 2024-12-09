@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Czasomierz - Strona główna{% endblock title %}
+{% block button2 %}<button type="button" class="btn btn-light">Wyloguj</button>{% endblock button2 %}
+{% block menu %}
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <div class="container-fluid">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Czas pracy</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Urlopy</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#">Kalendarz</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+{% endblock menu %}
+{% block content %}
+    <p><strong>O Aplikacji</strong></p>
+    <p>Projekt ma na celu zautomatyzowanie procesów związanych z rejestracją czasu pracy zdalnej,
+        a także urlopami wypoczynkowymi, poprzez odejście od papierowej formy składania takich wniosków. Ponadto
+        aplikacja ma na celu minimalizację błędów i nieścisłości wynikających z niewłaściwego wypełniania formularza
+        papierowego.
+        Aplikacja swoim charakterem zapewni również wsparcie przełożonym w skutecznym zarządzaniu, a także pracownikom
+        w dostępie do danych związanych z historią swoich zgłoszeń.</p>
+{% endblock content %}

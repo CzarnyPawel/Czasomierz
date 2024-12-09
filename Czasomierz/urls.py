@@ -21,4 +21,5 @@ from Czasomierz_app import views as czas_views
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('login/', czas_views.LoginView.as_view(), name='login'),
+    path('', czas_views.HomePageView.as_view(), name='main'),
 ]
