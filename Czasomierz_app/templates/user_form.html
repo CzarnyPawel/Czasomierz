@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Czasomierz - Rejestracja użytkownika{% endblock title %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-6 p-3 bg-dark text-white">Rejestracja użytkownika</div>
+    </div><br>
+    <form method="post">
+        {% csrf_token %}
+        <div class="row mb-3 align-items-center">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-2"><label for="{{ form.username.id_for_label }}"> {{ form.username.label }}</label></div>
+            <div class="col-sm-4">{{ form.username }}</div>
+        </div>
+        <br>
+        <div class="row mb-3 align-items-center">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-2"><label for="{{ form.email.id_for_label }}"> {{ form.email.label }}</label></div>
+            <div class="col-sm-4">{{ form.email }}</div>
+        </div>
+        <br>
+        <div class="row mb-3 align-items-center">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-2"><label for="{{ form.firstname.id_for_label }}"> {{ form.firstname.label }}</label>
+            </div>
+            <div class="col-sm-4">{{ form.firstname }}</div>
+        </div>
+        <br>
+        <div class="row mb-3 align-items-center">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-2"><label for="{{ form.lastname.id_for_label }}"> {{ form.lastname.label }}</label></div>
+            <div class="col-sm-4">{{ form.lastname }}</div>
+        </div>
+        <br>
+        <div class="row mb-3 align-items-center">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-2"><label for="{{ form.password.id_for_label }}"> {{ form.password.label }}</label></div>
+            <div class="col-sm-4">{{ form.password }}</div>
+        </div>
+        <br>
+        <div class="row mb-3 align-items-center">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-2"><label
+                    for="{{ form.confirm_password.id_for_label }}"> {{ form.confirm_password.label }}
+            </label></div>
+            <div class="col-sm-4">{{ form.confirm_password }}</div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-1"><input type="submit" class="btn btn-dark" value="Zarejestruj"></div>
+        </div>
+    </form>
+    <br>
+    <div class="row">
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="col-sm-3"></div>
+                <p class="text-danger col-sm-6">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endblock content %}

@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('login/', czas_views.LoginView.as_view(), name='login'),
     path('logout/', czas_views.LogoutView.as_view(), name='logout'),
+    path('register/', czas_views.UserRegisterView.as_view(), name='register'),
     path('', czas_views.HomePageView.as_view(), name='main'),
 ]
