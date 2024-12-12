@@ -32,6 +32,7 @@ class HomePageView(TemplateView):
     template_name = 'main.html'
 
 class UserRegisterView(FormView):
+    """View of the register form, after user clicks the Register button"""
     template_name = 'user_form.html'
     form_class = RegisterForm
     success_url = reverse_lazy('login')
