@@ -24,3 +24,9 @@ class TeamUser(models.Model):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     class Meta:
         unique_together = ('user', 'team')
+
+class WorkLog(models.Model):
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(auto_now_add=True)
+    tasks = models.TextField(null=True)
+    employee = models.ForeignKey(User, on_delete=models.CASCADE)
