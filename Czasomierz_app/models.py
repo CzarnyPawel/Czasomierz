@@ -6,7 +6,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     teams = models.ManyToManyField('Team', through='TeamUser')
     def __str__(self):
-        return f'{self.username}  {self.email}'
+        return f'{self.first_name} {self.last_name} - {self.email}'
 
 class Team(models.Model):
     name = models.CharField(max_length=50)
@@ -30,3 +30,5 @@ class WorkLog(models.Model):
     end_time = models.DateTimeField(auto_now_add=True)
     tasks = models.TextField(null=True)
     employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    def __str__(self):
+        return f'{self.employee}'
