@@ -7,3 +7,10 @@
 .button2 {
     margin-top: 10px;
 }
+
+.button_worklog {
+    width: 300px;
+    height: 150px;
+    font-size: 40px;
+    font-family: "sans-serif";
+}

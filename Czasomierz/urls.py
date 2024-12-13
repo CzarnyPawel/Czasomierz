@@ -24,4 +24,5 @@ urlpatterns = [
     path('logout/', czas_views.LogoutView.as_view(), name='logout'),
     path('register/', czas_views.UserRegisterView.as_view(), name='register'),
     path('', czas_views.HomePageView.as_view(), name='main'),
+    path('work-time/', czas_views.WorkLogView.as_view(), name='worklog'),
 ]

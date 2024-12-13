@@ -1,3 +1,5 @@
+from lib2to3.fixes.fix_input import context
+
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -31,6 +33,12 @@ class HomePageView(TemplateView):
     """View of the home page, after the user logs in to the application"""
     template_name = 'main.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+        return context
+
 class UserRegisterView(FormView):
     """View of the register form, after user clicks the Register button"""
     template_name = 'user_form.html'
@@ -45,3 +53,13 @@ class UserRegisterView(FormView):
         username = form.cleaned_data['username']
         User.objects.create_user(username=username, password=password, email=email,first_name=firstname, last_name=lastname)
         return super().form_valid(form)
+
+class WorkLogView(TemplateView):
+    """View of the work log page, where user can do some actions"""
+    template_name = 'register_time.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+        return context

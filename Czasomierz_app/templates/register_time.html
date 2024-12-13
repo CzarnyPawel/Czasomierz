@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Czasomierz - Czas pracy{% endblock title %}
+{% block button1 %}Witaj, {{ greeting }}{% endblock button1 %}
+{% block button2 %}<a href="{% url 'logout' %}" class="btn btn-light">Wyloguj</a>{% endblock button2 %}
+{% block menu %}
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <div class="container-fluid">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'worklog' %}">Czas pracy</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Urlopy</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#">Kalendarz</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+{% endblock menu %}
+{% block content %}
+<div class="row d-flex align-items-center">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-4"><button type="button" class="btn btn-success button_worklog"><h4>Rozpoczęcie pracy</p></button></div>
+    <div class="col-sm-2"></div>
+    <div class="col-sm-4"><button type="button" class="btn btn-danger button_worklog"><h4>Zakończenie pracy</h4></button></div>
+</div>
+    <br><hr><br>
+<div class="row d-flex align-items-center">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-4"><button type="button" class="btn btn-info button_worklog"><h4>Korekta czasu pracy</h4></button></div>
+    <div class="col-sm-2"></div>
+    <div class="col-sm-4"><button type="button" class="btn btn-warning button_worklog"><h4>Brak zdarzenia</h4></button></div>
+</div>
+    <br><br>
+<div class="row d-flex align-items-center">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-4"><button type="button" class="btn btn-secondary button_worklog"><h4>Raporty</h4></button></div>
+    <div class="col-sm-2"></div>
+    <div class="col-sm-4"><button type="button" class="btn btn-primary button_worklog"><h4>Akceptacje</h4></button></div>
+</div>
+{% endblock content %}
