@@ -1,5 +1,5 @@
 from lib2to3.fixes.fix_input import context
-
+from datetime import datetime, timedelta
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -74,6 +74,7 @@ class WorkLogStartTimeView(FormView):
     def get_initial(self):
         initial = super().get_initial()
         initial['employee'] = self.request.user.id
+        initial['start_time'] = datetime.now() + timedelta(hours=1)
         return initial
 
     def form_valid(self, form):

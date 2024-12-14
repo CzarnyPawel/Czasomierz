@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from os.path import exists
 
 from django import forms
@@ -47,8 +46,6 @@ class RegisterForm(forms.Form):
             raise ValidationError("Podany adres email istnieje w systemie. Proszę podać inny adres.")
         return cleaned_data
 
-current_time = datetime.now() + timedelta(hours=1)
-
 class WorkLogStartTimeForm(forms.Form):
     employee = forms.CharField(label='Pracownik', widget=forms.HiddenInput)
-    start_time = forms.DateTimeField(label="Data i godzina rozpoczęcia pracy", initial=current_time)
+    start_time = forms.DateTimeField(label="Data i godzina rozpoczęcia pracy")

@@ -26,13 +26,10 @@
     </div><br>
     <form method="post">
         {% csrf_token %}
-        <div class="row mb-3 align-items-center">
+        <div class="row">
             <div class="col-sm-3"></div>
-            <div class="col-sm-3"><label for="{{ form.start_time.id_for_label }}">{{ form.start_time.label }}</label>
-            </div>
-            <div class="col-sm-4">{{ form.start_time }}</div>
+            <div class="col-sm-3">{{ form.as_p }}</div>
         </div>
-        <br>
         <div class="row">
             <div class="col-sm-3"></div>
             <div class="col-sm-1"><input type="submit" class="btn btn-dark" value="Zarejestruj czas"></div>
