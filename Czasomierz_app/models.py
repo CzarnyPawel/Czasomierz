@@ -26,8 +26,8 @@ class TeamUser(models.Model):
         unique_together = ('user', 'team')
 
 class WorkLog(models.Model):
-    start_time = models.DateTimeField(auto_now_add=True)
-    end_time = models.DateTimeField(auto_now_add=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True)
     tasks = models.TextField(null=True)
     employee = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):

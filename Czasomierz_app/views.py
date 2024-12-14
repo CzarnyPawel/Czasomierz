@@ -9,8 +9,10 @@ from django.views import View
 from django.views.generic import TemplateView, CreateView
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
-from .forms import LoginForm, RegisterForm
-from .models import User
+from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm
+from .models import User, WorkLog
+
+
 # Create your views here.
 
 class LoginView(FormView):
@@ -57,6 +59,29 @@ class UserRegisterView(FormView):
 class WorkLogView(TemplateView):
     """View of the work log page, where user can do some actions"""
     template_name = 'register_time.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+        return context
+
+class WorkLogStartTimeView(FormView):
+    template_name = 'start_time.html'
+    form_class = WorkLogStartTimeForm
+    success_url = reverse_lazy('worklog')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['employee'] = self.request.user.id
+        return initial
+
+    def form_valid(self, form):
+        start_time = form.cleaned_data['start_time']
+        employee_id = form.cleaned_data['employee']
+        employee = User.objects.get(id=employee_id)
+        WorkLog.objects.create(employee=employee, start_time=start_time)
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

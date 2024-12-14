@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from os.path import exists
 
 from django import forms
@@ -5,7 +6,7 @@ from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.forms import PasswordInput
 
-from .models import User, TeamUser
+from .models import User, TeamUser, WorkLog
 
 
 class LoginForm(forms.Form):
@@ -45,3 +46,9 @@ class RegisterForm(forms.Form):
         if User.objects.filter(email=email).exists():
             raise ValidationError("Podany adres email istnieje w systemie. Proszę podać inny adres.")
         return cleaned_data
+
+current_time = datetime.now() + timedelta(hours=1)
+
+class WorkLogStartTimeForm(forms.Form):
+    employee = forms.CharField(label='Pracownik', widget=forms.HiddenInput)
+    start_time = forms.DateTimeField(label="Data i godzina rozpoczęcia pracy", initial=current_time)
