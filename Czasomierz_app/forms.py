@@ -49,3 +49,13 @@ class RegisterForm(forms.Form):
 class WorkLogStartTimeForm(forms.Form):
     employee = forms.CharField(label='Pracownik', widget=forms.HiddenInput)
     start_time = forms.DateTimeField(label="Data i godzina rozpoczęcia pracy")
+
+
+class WorkLogEndTimeForm(forms.ModelForm):
+    class Meta:
+        model = WorkLog
+        fields = ['start_time', 'end_time', 'tasks']
+        labels = {
+            'end_time': 'Data i godzina zakończenia pracy',
+            'tasks': 'Zrealizowane zadania',
+        }

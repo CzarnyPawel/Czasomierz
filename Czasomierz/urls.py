@@ -26,4 +26,5 @@ urlpatterns = [
     path('', czas_views.HomePageView.as_view(), name='main'),
     path('work-time/', czas_views.WorkLogView.as_view(), name='worklog'),
     path('start-time/', czas_views.WorkLogStartTimeView.as_view(), name='start_time'),
+    path('end-time/', czas_views.WorkLogEndTimeView.as_view(), name='end_time'),
 ]

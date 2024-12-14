@@ -1,4 +1,5 @@
 import pytest
+from django.urls import reverse_lazy, reverse
 
 from .models import User
 
@@ -11,14 +12,25 @@ def test_login_view(client):
 @pytest.mark.django_db
 def test_login_view_correct_data(client):
     User.objects.create_user(username='test', password='test')
-    response = client.login(username='test', password='test')
-    assert response
+    data = {
+        'username': 'test',
+        'password': 'test'
+    }
+    url = reverse('login')
+    response = client.post(url, data, follow =True)
+    assert response.context['user'].username == 'test'
+    #response = client.login(username='test', password='test')
+    #assert response
+
+
 
 @pytest.mark.django_db
-def test_login_view_incorrect_data(client):
+def test_logout_view(client):
     User.objects.create_user(username='test', password='test')
-    response = client.login(username='test', password='test1')
-    assert not response
+    client.login(username='test', password='test')
+    url = reverse('logout')
+    response = client.get(url, follow =True)
+    assert not response.context['user'].username == 'test'
 
 @pytest.mark.django_db
 def test_login_view_redirect_after_login(client):

@@ -22,9 +22,11 @@
 {% block content %}
 <div class="row d-flex align-items-center">
     <div class="col-sm-1"></div>
-    <div class="col-sm-4"><a class="btn btn-success button_worklog" href="{% url 'start_time' %}"><h4><p class="button2">Rozpoczęcie pracy</p></h4></a></div>
+    <div class="col-sm-4"><a class="btn btn-success button_worklog" href="{% url 'start_time' %}"><h4><p class="button2">
+        Rozpoczęcie pracy</p></h4></a></div>
     <div class="col-sm-2"></div>
-    <div class="col-sm-4"><button type="button" class="btn btn-danger button_worklog"><h4>Zakończenie pracy</h4></button></div>
+    <div class="col-sm-4"><a class="btn btn-danger button_worklog" href="{% url 'end_time' %}"><h4><p class="button2">
+        Zakończenie pracy</p></h4></a></div>
 </div>
     <br><hr><br>
 <div class="row d-flex align-items-center">
