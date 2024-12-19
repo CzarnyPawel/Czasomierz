@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from os.path import exists
 
 from django import forms
@@ -49,6 +50,11 @@ class RegisterForm(forms.Form):
 class WorkLogStartTimeForm(forms.Form):
     employee = forms.CharField(label='Pracownik', widget=forms.HiddenInput)
     start_time = forms.DateTimeField(label="Data i godzina rozpoczęcia pracy")
+
+    def clean(self):
+        cleaned_data =super().clean()
+        start_time = cleaned_data.get('start_time')
+        current_time = datetime.now() + timedelta(hours=1)
 
 
 class WorkLogEndTimeForm(forms.ModelForm):

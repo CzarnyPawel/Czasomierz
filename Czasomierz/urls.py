@@ -27,4 +27,7 @@ urlpatterns = [
     path('work-time/', czas_views.WorkLogView.as_view(), name='worklog'),
     path('start-time/', czas_views.WorkLogStartTimeView.as_view(), name='start_time'),
     path('end-time/', czas_views.WorkLogEndTimeView.as_view(), name='end_time'),
+    path('end-time404/', czas_views.WorkLogEndTime404.as_view(), name='worklog404'),
+    path('end-time-multi/', czas_views.WorkLogEndTimeMulti.as_view()),
+    path('delete-time/<int:pk>/', czas_views.WorkLogEndTimeMultiDelete.as_view(), name='delete_time'),
 ]
