@@ -1,6 +1,8 @@
 from audioop import reverse
 from lib2to3.fixes.fix_input import context
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from venv import logger
+
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -13,8 +15,9 @@ from django.views import View
 from django.views.generic import TemplateView, CreateView, UpdateView, ListView, DeleteView
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
-from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm, WorkLogEndTimeForm
+from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm, WorkLogEndTimeForm, WorkLogReportForm
 from .models import User, WorkLog
+from datetime import datetime, date, time
 
 
 # Create your views here.
@@ -78,6 +81,7 @@ class WorkLogView(TemplateView):
 
 
 class WorkLogStartTimeView(FormView):
+    """A view where the employee can register the start time of work on the form"""
     template_name = 'start_time.html'
     form_class = WorkLogStartTimeForm
     success_url = reverse_lazy('worklog')
@@ -105,18 +109,21 @@ class WorkLogStartTimeView(FormView):
 
 
 class WorkLogEndTimeView(UpdateView):
+    """A view where the employee can register the end time of work on the form"""
     form_class = WorkLogEndTimeForm
     model = WorkLog
     template_name = 'worklog_update_form.html'
     success_url = reverse_lazy('worklog')
 
     def get_context_data(self, **kwargs):
+        """A method that handles forwarding in the user greeting context"""
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             context['greeting'] = f"{self.request.user.first_name}"
         return context
 
     def get_initial(self):
+        """A method that handles passing data to fields"""
         initial = super().get_initial()
         initial['employee'] = self.request.user.id
         initial['end_time'] = datetime.now() + timedelta(hours=1)
@@ -124,6 +131,7 @@ class WorkLogEndTimeView(UpdateView):
         return initial
 
     def get_object(self, queryset=None):
+        """A method that handles retrieving an object from the database and exceptions"""
         try:
             obj = WorkLog.objects.get(employee=self.request.user, end_time__isnull=True)
         except WorkLog.DoesNotExist:
@@ -133,6 +141,7 @@ class WorkLogEndTimeView(UpdateView):
         return obj
 
     def dispatch(self, request, *args, **kwargs):
+        """A method that handles exceptions"""
         try:
             return super().dispatch(request)
         except WorkLog.DoesNotExist:
@@ -142,7 +151,9 @@ class WorkLogEndTimeView(UpdateView):
             # do obsłużenia, jeśli występuje więcej niż jedno zdarzenie w danym dniu
             return redirect('/end-time-multi/')
 
+
 class WorkLogEndTime404(TemplateView):
+    """View showing run time end error"""
     template_name = 'worklog404.html'
 
     def get_context_data(self, **kwargs):
@@ -151,7 +162,9 @@ class WorkLogEndTime404(TemplateView):
             context['greeting'] = f"{self.request.user.first_name}"
         return context
 
+
 class WorkLogEndTimeMulti(ListView):
+    """A view showing a multiple object return exception"""
     model = WorkLog
     template_name = 'worklog_multiple.html'
 
@@ -164,7 +177,9 @@ class WorkLogEndTimeMulti(ListView):
             context['greeting'] = f"{self.request.user.first_name}"
         return context
 
+
 class WorkLogEndTimeMultiDelete(DeleteView):
+    """View showing multiple object return exception - deleting selected one"""
     model = WorkLog
     success_url = reverse_lazy('worklog')
     template_name = 'worklog_delete.html'
@@ -173,4 +188,43 @@ class WorkLogEndTimeMultiDelete(DeleteView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             context['greeting'] = f"{self.request.user.first_name}"
+        return context
+
+
+class WorkLogReportView(FormView):
+    form_class = WorkLogReportForm
+    template_name = 'worklog_report.html'
+    success_url = reverse_lazy('show_report')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+        return context
+
+    def form_valid(self, form):
+        self.request.session['start_time'] = str(form.cleaned_data['start_time'])
+        self.request.session['end_time'] = str(form.cleaned_data['end_time'])
+        return super().form_valid(form)
+
+
+class WorkLogReportShow(ListView):
+    model = WorkLog
+    template_name = 'worklog_report_show.html'
+    context_object_name = 'objects'
+
+    def get_queryset(self):
+        start_time = self.request.session.get('start_time')
+        end_time = self.request.session.get('end_time')
+
+        if start_time and end_time:
+            return WorkLog.objects.filter(employee=self.request.user, start_time__date__gte=start_time, end_time__date__lte=end_time).order_by('start_time')
+        return WorkLog.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+
+
         return context

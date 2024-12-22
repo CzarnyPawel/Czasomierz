@@ -65,3 +65,15 @@ class WorkLogEndTimeForm(forms.ModelForm):
             'end_time': 'Data i godzina zakończenia pracy',
             'tasks': 'Zrealizowane zadania',
         }
+
+class WorkLogReportForm(forms.Form):
+    start_time = forms.DateField(label='Zakres daty - od', widget=forms.DateInput(attrs={'type': 'date'}))
+    end_time = forms.DateField(label='Zakres daty - do', widget=forms.DateInput(attrs={'type': 'date'}))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_time = cleaned_data.get('start_time')
+        end_time = cleaned_data.get('end_time')
+        if start_time > end_time:
+            raise ValidationError('Podana data "od" nie może być większa od podanej daty "do"')
+        return cleaned_data

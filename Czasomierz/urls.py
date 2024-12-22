@@ -30,4 +30,6 @@ urlpatterns = [
     path('end-time404/', czas_views.WorkLogEndTime404.as_view(), name='worklog404'),
     path('end-time-multi/', czas_views.WorkLogEndTimeMulti.as_view()),
     path('delete-time/<int:pk>/', czas_views.WorkLogEndTimeMultiDelete.as_view(), name='delete_time'),
+    path('report/', czas_views.WorkLogReportView.as_view(), name='report'),
+    path('show-report/', czas_views.WorkLogReportShow.as_view(), name='show_report'),
 ]
