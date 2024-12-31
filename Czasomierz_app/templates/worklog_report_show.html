@@ -22,7 +22,7 @@
 {% block content %}
     <div class="container mt-3">
         <h3>Raport czasu pracy</h3>
-        
+
         <table class="table table-hover">
             <thead>
             <tr>
@@ -39,6 +39,8 @@
                 <td>{{ object.start_time.time }}</td>
                 <td>{{ object.end_time.date }}</td>
                 <td>{{ object.end_time.time }}</td>
+            {% empty %}
+                <p class="text-warning">Brak dostępnych danych dla wskazanego okresu</p>
             {% endfor %}
             </tr>
             </tbody>

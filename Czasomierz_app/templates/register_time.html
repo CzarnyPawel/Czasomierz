@@ -20,27 +20,41 @@
     </nav>
 {% endblock menu %}
 {% block content %}
-<div class="row d-flex align-items-center">
-    <div class="col-sm-1"></div>
-    <div class="col-sm-4"><a class="btn btn-success button_worklog" href="{% url 'start_time' %}"><h4><p class="button2">
-        Rozpoczęcie pracy</p></h4></a></div>
-    <div class="col-sm-2"></div>
-    <div class="col-sm-4"><a class="btn btn-danger button_worklog" href="{% url 'end_time' %}"><h4><p class="button2">
-        Zakończenie pracy</p></h4></a></div>
-</div>
-    <br><hr><br>
-<div class="row d-flex align-items-center">
-    <div class="col-sm-1"></div>
-    <div class="col-sm-4"><button type="button" class="btn btn-info button_worklog"><h4>Korekta czasu pracy</h4></button></div>
-    <div class="col-sm-2"></div>
-    <div class="col-sm-4"><button type="button" class="btn btn-warning button_worklog"><h4>Brak zdarzenia</h4></button></div>
-</div>
+    <div class="row d-flex align-items-center">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-4"><a class="btn btn-success button_worklog" href="{% url 'start_time' %}">
+            <h4><p class="button2">
+                Rozpoczęcie pracy</p></h4>
+        </a></div>
+        <div class="col-sm-2"></div>
+        <div class="col-sm-4"><a class="btn btn-danger button_worklog" href="{% url 'end_time' %}">
+            <h4><p class="button2">
+                Zakończenie pracy</p></h4>
+        </a></div>
+    </div>
+    <br>
+    <hr><br>
+    <div class="row d-flex align-items-center">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-4">
+            <button type="button" class="btn btn-info button_worklog"><h4>Korekta czasu pracy</h4></button>
+        </div>
+        <div class="col-sm-2"></div>
+        <div class="col-sm-4"><a class="btn btn-warning button_worklog" href="{% url 'no_event' %}">
+            <h4><p class="button2">
+                Brak zdarzenia</p></h4>
+        </a></div>
+    </div>
     <br><br>
-<div class="row d-flex align-items-center">
-    <div class="col-sm-1"></div>
-    <div class="col-sm-4"><a class="btn btn-secondary button_worklog" href="{% url 'report' %}"><h4><p class="button2">
-        Raporty</p></h4></a></div>
-    <div class="col-sm-2"></div>
-    <div class="col-sm-4"><button type="button" class="btn btn-primary button_worklog"><h4>Akceptacje</h4></button></div>
-</div>
+    <div class="row d-flex align-items-center">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-4"><a class="btn btn-secondary button_worklog" href="{% url 'report' %}">
+            <h4><p class="button2">
+                Raporty</p></h4>
+        </a></div>
+        <div class="col-sm-2"></div>
+        <div class="col-sm-4">
+            <button type="button" class="btn btn-primary button_worklog"><h4>Akceptacje</h4></button>
+        </div>
+    </div>
 {% endblock content %}

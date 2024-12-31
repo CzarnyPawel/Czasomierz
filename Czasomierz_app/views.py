@@ -1,5 +1,4 @@
 from audioop import reverse
-from lib2to3.fixes.fix_input import context
 from datetime import datetime, timedelta, timezone
 from venv import logger
 
@@ -8,14 +7,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.db import IntegrityError
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.template.context_processors import request
 from django.views import View
 from django.views.generic import TemplateView, CreateView, UpdateView, ListView, DeleteView
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
-from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm, WorkLogEndTimeForm, WorkLogReportForm
+from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm, WorkLogEndTimeForm, WorkLogReportForm, \
+    WorkLogNoEventForm
 from .models import User, WorkLog
 from datetime import datetime, date, time
 
@@ -225,6 +225,26 @@ class WorkLogReportShow(ListView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             context['greeting'] = f"{self.request.user.first_name}"
-
-
         return context
+
+class WorkLogNoEventView(CreateView):
+    form_class = WorkLogNoEventForm
+    template_name = 'worklog_no_event.html'
+    success_url = reverse_lazy('worklog')
+
+    def form_valid(self, form):
+        start_time = form.cleaned_data['start_time']
+        end_time = form.cleaned_data['end_time']
+        tasks = form.cleaned_data['tasks']
+        if WorkLog.objects.filter(employee=self.request.user, start_time__date=start_time.date(), end_time__date=end_time.date()).exists():
+            form.add_error(None, "W danym dniu istnieje zarejestrowane rozpoczęcie i zakończenie czasu pracy")
+            return self.form_invalid(form)
+        WorkLog.objects.create(start_time=start_time, end_time=end_time, tasks=tasks, employee=self.request.user)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+        return context
+

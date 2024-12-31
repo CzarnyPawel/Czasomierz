@@ -77,3 +77,19 @@ class WorkLogReportForm(forms.Form):
         if start_time > end_time:
             raise ValidationError('Podana data "od" nie może być większa od podanej daty "do"')
         return cleaned_data
+
+class WorkLogNoEventForm(forms.ModelForm):
+    class Meta:
+        model = WorkLog
+        fields = ['start_time', 'end_time', 'tasks']
+    start_time = forms.DateTimeField(label='Godzina i data rozpoczęcia pracy', widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
+    end_time = forms.DateTimeField(label='Godzina i data zakończenia pracy', widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
+    tasks = forms.CharField(label='Zrealizowane zadania', widget=forms.Textarea)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_time = cleaned_data.get('start_time')
+        end_time = cleaned_data.get('end_time')
+        if start_time > end_time:
+            raise ValidationError('Data i godzina rozpoczęcia pracy nie może być późniejsza niż data i godzina zakończenia pracy')
+        return cleaned_data
