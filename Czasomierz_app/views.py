@@ -16,8 +16,9 @@ from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
 from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm, WorkLogEndTimeForm, WorkLogReportForm, \
     WorkLogNoEventForm
-from .models import User, WorkLog
+from .models import User, WorkLog, TeamUser
 from datetime import datetime, date, time
+from django.core.mail import EmailMultiAlternatives
 
 
 # Create your views here.
@@ -218,7 +219,8 @@ class WorkLogReportShow(ListView):
         end_time = self.request.session.get('end_time')
 
         if start_time and end_time:
-            return WorkLog.objects.filter(employee=self.request.user, start_time__date__gte=start_time, end_time__date__lte=end_time).order_by('start_time')
+            return WorkLog.objects.filter(employee=self.request.user, start_time__date__gte=start_time,
+                                          end_time__date__lte=end_time, state=True).order_by('start_time')
         return WorkLog.objects.none()
 
     def get_context_data(self, **kwargs):
@@ -226,6 +228,7 @@ class WorkLogReportShow(ListView):
         if self.request.user.is_authenticated:
             context['greeting'] = f"{self.request.user.first_name}"
         return context
+
 
 class WorkLogNoEventView(CreateView):
     form_class = WorkLogNoEventForm
@@ -236,10 +239,32 @@ class WorkLogNoEventView(CreateView):
         start_time = form.cleaned_data['start_time']
         end_time = form.cleaned_data['end_time']
         tasks = form.cleaned_data['tasks']
-        if WorkLog.objects.filter(employee=self.request.user, start_time__date=start_time.date(), end_time__date=end_time.date()).exists():
-            form.add_error(None, "W danym dniu istnieje zarejestrowane rozpoczęcie i zakończenie czasu pracy")
-            return self.form_invalid(form)
-        WorkLog.objects.create(start_time=start_time, end_time=end_time, tasks=tasks, employee=self.request.user)
+        if start_time and end_time and tasks:
+            if WorkLog.objects.filter(employee=self.request.user, start_time__date=start_time.date(),
+                                      end_time__date=end_time.date()).exists():
+                form.add_error(None, "W danym dniu istnieje zarejestrowane rozpoczęcie i zakończenie czasu pracy")
+                return self.form_invalid(form)
+            WorkLog.objects.create(start_time=start_time, end_time=end_time, tasks=tasks, state=False,
+                                   employee=self.request.user)
+
+            user_team = self.request.user.teams.all()
+            team_lead = TeamUser.objects.filter(team__in=user_team, role='team_lead')
+            if team_lead.exists():
+                team_lead_email = team_lead.first().user.email
+            else:
+                form.add_error(None,
+                               "W zespole do którego należy użytkownik nie zdefiniowano przełożonego. Należy skontaktować się z działem kadr")
+                return self.form_invalid(form)
+
+            subject = 'Czasomierz: Wniosek - brak zdarzenia'
+            from_email = 'czasomierz.info@gmail.com'
+            to = team_lead_email
+            text_content = 'W aplikacji Czasomierz w zakładce Akceptacje oczekuje nowy wniosek o brak zdarzenia.'
+            html_content = '<p>W aplikacji Czasomierz w zakładce Akceptacje oczekuje nowy wniosek o brak zdarzenia</p>'
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            msg.attach_alternative(html_content, 'text/html')
+            msg.send()
+
         return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
@@ -247,4 +272,3 @@ class WorkLogNoEventView(CreateView):
         if self.request.user.is_authenticated:
             context['greeting'] = f"{self.request.user.first_name}"
         return context
-

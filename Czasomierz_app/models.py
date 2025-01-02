@@ -29,6 +29,7 @@ class WorkLog(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True)
     tasks = models.TextField(null=True)
+    state = models.BooleanField(default=True)
     employee = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):
         return f'{self.employee}'
