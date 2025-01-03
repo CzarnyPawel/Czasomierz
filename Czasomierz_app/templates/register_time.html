@@ -36,9 +36,10 @@
     <hr><br>
     <div class="row d-flex align-items-center">
         <div class="col-sm-1"></div>
-        <div class="col-sm-4">
-            <button type="button" class="btn btn-info button_worklog"><h4>Korekta czasu pracy</h4></button>
-        </div>
+                <div class="col-sm-4"><a class="btn btn-info button_worklog" href="{% url 'time_correction' %}">
+            <h4><p class="button2">
+                Korekta czasu pracy</p></h4>
+        </a></div>
         <div class="col-sm-2"></div>
         <div class="col-sm-4"><a class="btn btn-warning button_worklog" href="{% url 'no_event' %}">
             <h4><p class="button2">

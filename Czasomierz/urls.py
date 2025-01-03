@@ -33,4 +33,7 @@ urlpatterns = [
     path('report/', czas_views.WorkLogReportView.as_view(), name='report'),
     path('show-report/', czas_views.WorkLogReportShow.as_view(), name='show_report'),
     path('no-event/', czas_views.WorkLogNoEventView.as_view(), name='no_event'),
+    path('time-correction/', czas_views.WorkLogTimeCorrectionView.as_view(), name='time_correction'),
+    path('time-correction404/', czas_views.WorkLogTimCorrection404.as_view(), name='time_correction404'),
+    path('time-correction-update/<int:pk>/', czas_views.WorkLogTimeCorrectionUpdateView.as_view(), name='time_correction_update'),
 ]

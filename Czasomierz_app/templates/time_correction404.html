@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Czasomierz - Zakończenie pracy{% endblock title %}
+{% block title %}Czasomierz - Wniosek o korektę czasu pracy{% endblock title %}
 {% block button1 %}Witaj, {{ greeting }}{% endblock button1 %}
 {% block button2 %}<a href="{% url 'logout' %}" class="btn btn-light">Wyloguj</a>{% endblock button2 %}
 {% block menu %}
@@ -21,7 +21,7 @@
 {% endblock menu %}
 {% block content %}
     <div class="alert alert-danger">
-        <strong>Uwaga!</strong> Rejestracja zakończenia czasu pracy jest niemożliwa. W danym dniu nie zarejestrowano
-        rozpoczęcia czasu pracy lub zakończenie czasu pracy zostało już zarejestrowane.</a>
+        <strong>Uwaga!</strong> Wysłanie wniosku o korektę czasu pracy jest niemożliwe, ponieważ dla wskazanej daty nie
+        istnieje zarejestrowany czas pracy.</a>
     </div>
 {% endblock content %}

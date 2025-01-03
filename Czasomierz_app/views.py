@@ -1,11 +1,10 @@
-from audioop import reverse
 from datetime import datetime, timedelta, timezone
 from venv import logger
 
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ValidationError, MultipleObjectsReturned
+from django.core.exceptions import ValidationError, MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -13,9 +12,9 @@ from django.template.context_processors import request
 from django.views import View
 from django.views.generic import TemplateView, CreateView, UpdateView, ListView, DeleteView
 from django.views.generic.edit import FormView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm, WorkLogEndTimeForm, WorkLogReportForm, \
-    WorkLogNoEventForm
+    WorkLogNoEventForm, WorkLogTimeCorrectionForm, WorkLogCorrectionUpdateForm
 from .models import User, WorkLog, TeamUser
 from datetime import datetime, date, time
 from django.core.mail import EmailMultiAlternatives
@@ -272,3 +271,58 @@ class WorkLogNoEventView(CreateView):
         if self.request.user.is_authenticated:
             context['greeting'] = f"{self.request.user.first_name}"
         return context
+
+class WorkLogTimeCorrectionView(FormView):
+    form_class = WorkLogTimeCorrectionForm
+    template_name = 'worklog_time_correction.html'
+    success_url = reverse_lazy('time_correction')
+
+    def form_valid(self, form):
+        date_field = form.cleaned_data['date_field']
+        if not date_field:
+            form.add_error(None, 'Należy podać poprawną datę')
+            return self.form_invalid(form)
+        try:
+            work_log_record = WorkLog.objects.get(employee=self.request.user, start_time__date__gte=date_field, end_time__date__lte=date_field)
+        except ObjectDoesNotExist:
+            return redirect('/time-correction404/')
+        return redirect(reverse('time_correction_update', kwargs={'pk': work_log_record.pk}))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+        return context
+
+class WorkLogTimCorrection404(TemplateView):
+    """View showing time correction error"""
+    template_name = 'time_correction404.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+        return context
+
+class WorkLogTimeCorrectionUpdateView(UpdateView):
+    model = WorkLog
+    form_class = WorkLogCorrectionUpdateForm
+    template_name = 'worklog_correction_update.html'
+    success_url = reverse_lazy('worklog')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        worklog = self.get_object()
+        initial['start_time'] = worklog.start_time.strftime('%Y-%m-%dT%H:%M')
+        initial['end_time'] = worklog.end_time.strftime('%Y-%m-%dT%H:%M')
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+        return context
+
+    def form_valid(self, form):
+        form.instance.state = False
+        return super().form_valid(form)
