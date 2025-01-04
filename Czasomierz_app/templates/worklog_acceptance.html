@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Czasomierz - Akceptacje{% endblock title %}
+{% block button1 %}Witaj, {{ greeting }}{% endblock button1 %}
+{% block button2 %}<a href="{% url 'logout' %}" class="btn btn-light">Wyloguj</a>{% endblock button2 %}
+{% block menu %}
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <div class="container-fluid">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'worklog' %}">Czas pracy</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Urlopy</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#">Kalendarz</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+{% endblock menu %}
+{% block content %}
+
+    <div class="container mt-3">
+        <h3>Wnioski przedstawione do akceptacji</h3>
+
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Imię</th>
+                <th>Nazwisko</th>
+                <th>Rodzaj wniosku</th>
+                <th>Data rozpoczęcia</th>
+                <th>Godzina rozpoczęcia</th>
+                <th>Data zakończenia</th>
+                <th>Godzina Zakończenia</th>
+                <th>Akceptacja</th>
+                <th>Odrzucenie</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for object in object_list %}
+                <tr>
+                <td>{{ object.employee.first_name }}</td>
+                <td>{{ object.employee.last_name }}</td>
+                <td></td>
+                <td>{{ object.start_time.date }}</td>
+                <td>{{ object.start_time.time }}</td>
+                <td>{{ object.end_time.date }}</td>
+                <td>{{ object.end_time.time }}</td>
+                <td><a href="/update-record/{{ object.id }}/" class="btn btn-success">Akceptuj</a></td>
+                <td><a href="/delete-record/{{ object.id }}/" class="btn btn-danger">Odrzuć</a></td>
+            {% empty %}
+                <p class="text-warning">Brak dostępnych danych dla wskazanego okresu</p>
+            {% endfor %}
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+{% endblock content %}

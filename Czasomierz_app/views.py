@@ -77,6 +77,7 @@ class WorkLogView(TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             context['greeting'] = f"{self.request.user.first_name}"
+            context['role'] = TeamUser.objects.get(user=self.request.user).role
         return context
 
 
@@ -326,3 +327,34 @@ class WorkLogTimeCorrectionUpdateView(UpdateView):
     def form_valid(self, form):
         form.instance.state = False
         return super().form_valid(form)
+
+class WorkLogAcceptanceView(ListView):
+    model = WorkLog
+    template_name = 'worklog_acceptance.html'
+
+    def get_queryset(self):
+        user_team = TeamUser.objects.filter(user=self.request.user).values_list('team',flat=True)
+        return WorkLog.objects.filter(state=False, employee__teamuser__team__in=user_team)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+        return context
+
+class WorkLogAcceptanceDeleteView(DeleteView):
+    model = WorkLog
+    success_url = reverse_lazy('acceptance')
+    template_name = 'worklog_acceptance_delete.html'
+
+class WorkLogAcceptanceUpdateView(UpdateView):
+    model = WorkLog
+    fields = ['state', 'start_time', 'end_time', 'employee', 'tasks']
+    success_url = reverse_lazy('acceptance')
+    template_name = 'worklog_acceptance_update.html'
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.state = True
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())

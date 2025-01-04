@@ -36,7 +36,7 @@
     <hr><br>
     <div class="row d-flex align-items-center">
         <div class="col-sm-1"></div>
-                <div class="col-sm-4"><a class="btn btn-info button_worklog" href="{% url 'time_correction' %}">
+        <div class="col-sm-4"><a class="btn btn-info button_worklog" href="{% url 'time_correction' %}">
             <h4><p class="button2">
                 Korekta czasu pracy</p></h4>
         </a></div>
@@ -54,8 +54,13 @@
                 Raporty</p></h4>
         </a></div>
         <div class="col-sm-2"></div>
+        {% if role == 'team_lead' %}
         <div class="col-sm-4">
-            <button type="button" class="btn btn-primary button_worklog"><h4>Akceptacje</h4></button>
+            <a class="btn btn-primary button_worklog" href="{% url 'acceptance' %}">
+                <h4><p class="button2">
+                    Akceptacje</p></h4>
+            </a>
         </div>
+        {% endif %}
     </div>
 {% endblock content %}
