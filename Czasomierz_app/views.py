@@ -20,7 +20,6 @@ from django.core.mail import EmailMultiAlternatives
 
 class BaseContextData:
     """Base class for the context_data method"""
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
@@ -88,7 +87,7 @@ class WorkLogView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class WorkLogStartTimeView(LoginRequiredMixin, BaseContextData, FormView):
+class WorkLogStartTimeView(LoginRequiredMixin, BaseContextData, CreateView):
     """A view where the employee can register the start time of work on the form"""
     template_name = 'start_time.html'
     form_class = WorkLogStartTimeForm
@@ -97,7 +96,7 @@ class WorkLogStartTimeView(LoginRequiredMixin, BaseContextData, FormView):
     def get_initial(self):
         """Method for passing initial data to the form"""
         initial = super().get_initial()
-        initial['employee'] = self.request.user.id
+        initial['employee'] = self.request.user
         initial['start_time'] = datetime.now() + timedelta(hours=1)
         return initial
 
@@ -108,8 +107,8 @@ class WorkLogStartTimeView(LoginRequiredMixin, BaseContextData, FormView):
         if WorkLog.objects.filter(employee=employee, start_time__date=start_time.date()).exists():
             form.add_error(None, "W danym dniu istnieje zarejestrowane rozpoczęcie pracy")
             return self.form_invalid(form)
-        WorkLog.objects.create(employee=employee, start_time=start_time)
-        return super().form_valid(form)
+        WorkLog.objects.create(employee=self.request.user, start_time=start_time)
+        return HttpResponseRedirect(self.success_url)
 
 
 class WorkLogEndTimeView(LoginRequiredMixin, BaseContextData, UpdateView):
@@ -267,12 +266,24 @@ class WorkLogTimeCorrectionView(LoginRequiredMixin, BaseContextData, FormView):
             form.add_error(None,
                            'Wyszukanie rekordu do wniosku o korektę czasu pracy jest niemożliwe, ponieważ dla wskazanej daty nie istnieje zarejestrowany czas pracy.')
             return self.form_invalid(form)
+
+        user_team = self.request.user.teams.all()
+        team_lead = TeamUser.objects.filter(team__in=user_team, role='team_lead')
+        if team_lead.exists():
+            team_lead_email = team_lead.first().user.email
+        else:
+            form.add_error(None,
+                           "W zespole do którego należy użytkownik nie zdefiniowano przełożonego. Należy skontaktować się z działem kadr")
+            return self.form_invalid(form)
+        subject = 'Czasomierz: Wniosek - korekta czasu pracy'
+        from_email = 'czasomierz.info@gmail.com'
+        to = team_lead_email
+        text_content = 'W aplikacji Czasomierz w zakładce Akceptacje oczekuje nowy wniosek o korektę czasu pracy.'
+        html_content = '<p>W aplikacji Czasomierz w zakładce Akceptacje oczekuje nowy wniosek o korektę czasu pracy.</p>'
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        msg.attach_alternative(html_content, 'text/html')
+        msg.send()
         return redirect(reverse('time_correction_update', kwargs={'pk': work_log_record.pk}))
-
-
-class WorkLogTimCorrection404(LoginRequiredMixin, BaseContextData, TemplateView):
-    """View showing time correction error"""
-    template_name = 'time_correction404.html'
 
 
 class WorkLogTimeCorrectionUpdateView(LoginRequiredMixin, UserPassesTestMixin, BaseContextData, UpdateView):

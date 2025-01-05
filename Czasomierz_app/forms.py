@@ -48,9 +48,13 @@ class RegisterForm(forms.Form):
         return cleaned_data
 
 
-class WorkLogStartTimeForm(forms.Form):
-    employee = forms.CharField(label='Pracownik', widget=forms.HiddenInput)
-    start_time = forms.DateTimeField(label="Data i godzina rozpoczęcia pracy")
+class WorkLogStartTimeForm(forms.ModelForm):
+    class Meta:
+        model = WorkLog
+        fields = ['start_time', 'employee']
+
+    employee = forms.ModelChoiceField(queryset=User.objects.all(), label='Pracownik', widget=forms.HiddenInput)
+    start_time = forms.DateTimeField(label="Data i godzina rozpoczęcia pracy", disabled=True)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -63,10 +67,11 @@ class WorkLogEndTimeForm(forms.ModelForm):
         model = WorkLog
         fields = ['start_time', 'end_time', 'tasks']
         labels = {
-            'start_time': 'Data i godzina rozpoczęcia pracy',
-            'end_time': 'Data i godzina zakończenia pracy',
             'tasks': 'Zrealizowane zadania',
         }
+
+    start_time = forms.DateTimeField(label='Data i godzina rozpoczęcia pracy', disabled=True)
+    end_time = forms.DateTimeField(label='Data i godzina zakończenia pracy', disabled=True)
 
 
 class WorkLogReportForm(forms.Form):
@@ -120,9 +125,9 @@ class WorkLogCorrectionUpdateForm(forms.ModelForm):
         fields = ['start_time', 'end_time']
 
     start_time = forms.DateTimeField(label='Godzina i data rozpoczęcia pracy',
-                                         widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
+                                     widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
     end_time = forms.DateTimeField(label='Godzina i data zakończenia pracy',
-                                       widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
+                                   widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
 
     def clean(self):
         cleaned_data = super().clean()
