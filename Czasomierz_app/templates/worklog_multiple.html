@@ -21,7 +21,26 @@
 {% endblock menu %}
 {% block content %}
     <h3>Występujące duplikacje rejestracji czasu pracy:</h3>
-{% for object in object_list %}
-<li>{{ object.start_time }} <a href="/delete-time/{{ object.id }}/" class="btn btn-danger">Usuń rekord</a></li><br>
-{% endfor %}
+
+    <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Data duplikacji</th>
+                <th>Godzina duplikacji</th>
+                <th>Usuwanie</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for object in object_list %}
+                <tr>
+                <td>{{ object.start_time.date }}</td>
+                <td>{{ object.start_time.time }}</td>
+                <td><a href="/delete-time/{{ object.id }}/" class="btn btn-danger">Usuń rekord</a></td>
+            {% empty %}
+                <p class="text-warning">Brak duplikacji rejestracji czasu pracy</p>
+            {% endfor %}
+            </tr>
+            </tbody>
+        </table>
+    <div class="col-sm-1"><a href="{% url 'worklog' %}" class="btn btn-secondary">Powrót</a></div>
 {% endblock content %}

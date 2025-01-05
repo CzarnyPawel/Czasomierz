@@ -63,6 +63,7 @@ class WorkLogEndTimeForm(forms.ModelForm):
         model = WorkLog
         fields = ['start_time', 'end_time', 'tasks']
         labels = {
+            'start_time': 'Data i godzina rozpoczęcia pracy',
             'end_time': 'Data i godzina zakończenia pracy',
             'tasks': 'Zrealizowane zadania',
         }

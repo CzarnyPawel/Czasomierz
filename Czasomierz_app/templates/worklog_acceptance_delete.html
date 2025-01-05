@@ -22,9 +22,11 @@
 {% block content %}
     <form method="post">
         {% csrf_token %}
-        <div class="alert alert-danger">Czy na pewno Chcesz usunąć wybrany rekord?</div>
-
-        <input type="submit" class="btn btn-dark" value="Potwierdź">
+        <div class="alert alert-danger">Czy na pewno Chcesz odrzucić wybrany wniosek?</div>
+        <div class="row">
+            <div class="col-sm-2"><input type="submit" class="btn btn-dark" value="Odrzuć"></div>
+            <div class="col-sm-1"><a href="{% url 'worklog' %}" class="btn btn-secondary">Anuluj</a></div>
+        </div>
 
     </form>
 {% endblock content %}

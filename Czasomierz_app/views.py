@@ -1,11 +1,7 @@
-from datetime import datetime, timedelta, timezone
-from venv import logger
-
 from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError, MultipleObjectsReturned, ObjectDoesNotExist
-from django.db import IntegrityError
+from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.template.context_processors import request
@@ -16,11 +12,21 @@ from django.urls import reverse_lazy, reverse
 from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm, WorkLogEndTimeForm, WorkLogReportForm, \
     WorkLogNoEventForm, WorkLogTimeCorrectionForm, WorkLogCorrectionUpdateForm
 from .models import User, WorkLog, TeamUser
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 from django.core.mail import EmailMultiAlternatives
 
 
 # Create your views here.
+
+class BaseContextData:
+    """Base class for the context_data method"""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+        return context
+
 
 class LoginView(FormView):
     """User login view to the application"""
@@ -29,7 +35,11 @@ class LoginView(FormView):
     success_url = reverse_lazy('main')
 
     def form_valid(self, form):
+        """Method for user login and redirection"""
         login(self.request, form.user)
+        next_url = self.request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
         return super().form_valid(form)
 
 
@@ -37,19 +47,14 @@ class LogoutView(View):
     """Logout view"""
 
     def get(self, request):
+        """Logout method"""
         logout(request)
         return redirect('login')
 
 
-class HomePageView(LoginRequiredMixin, TemplateView):
+class HomePageView(LoginRequiredMixin, BaseContextData, TemplateView):
     """View of the home page, after the user logs in to the application"""
     template_name = 'main.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
 
 
 class UserRegisterView(FormView):
@@ -59,6 +64,7 @@ class UserRegisterView(FormView):
     success_url = reverse_lazy('login')
 
     def form_valid(self, form):
+        """Overriding the form_valid method for registering a new user"""
         firstname = form.cleaned_data['firstname']
         lastname = form.cleaned_data['lastname']
         email = form.cleaned_data['email']
@@ -69,11 +75,12 @@ class UserRegisterView(FormView):
         return super().form_valid(form)
 
 
-class WorkLogView(TemplateView):
+class WorkLogView(LoginRequiredMixin, TemplateView):
     """View of the work log page, where user can do some actions"""
     template_name = 'register_time.html'
 
     def get_context_data(self, **kwargs):
+        """Method for passing data to the context"""
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             context['greeting'] = f"{self.request.user.first_name}"
@@ -81,19 +88,21 @@ class WorkLogView(TemplateView):
         return context
 
 
-class WorkLogStartTimeView(FormView):
+class WorkLogStartTimeView(LoginRequiredMixin, BaseContextData, FormView):
     """A view where the employee can register the start time of work on the form"""
     template_name = 'start_time.html'
     form_class = WorkLogStartTimeForm
     success_url = reverse_lazy('worklog')
 
     def get_initial(self):
+        """Method for passing initial data to the form"""
         initial = super().get_initial()
         initial['employee'] = self.request.user.id
         initial['start_time'] = datetime.now() + timedelta(hours=1)
         return initial
 
     def form_valid(self, form):
+        """A method of filtering data and creating new objects in the database"""
         start_time = form.cleaned_data['start_time']
         employee = self.request.user
         if WorkLog.objects.filter(employee=employee, start_time__date=start_time.date()).exists():
@@ -102,29 +111,16 @@ class WorkLogStartTimeView(FormView):
         WorkLog.objects.create(employee=employee, start_time=start_time)
         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
 
-
-class WorkLogEndTimeView(UpdateView):
+class WorkLogEndTimeView(LoginRequiredMixin, BaseContextData, UpdateView):
     """A view where the employee can register the end time of work on the form"""
     form_class = WorkLogEndTimeForm
     model = WorkLog
     template_name = 'worklog_update_form.html'
     success_url = reverse_lazy('worklog')
 
-    def get_context_data(self, **kwargs):
-        """A method that handles forwarding in the user greeting context"""
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
-
     def get_initial(self):
-        """A method that handles passing data to fields"""
+        """Method for passing initial data to the form"""
         initial = super().get_initial()
         initial['employee'] = self.request.user.id
         initial['end_time'] = datetime.now() + timedelta(hours=1)
@@ -153,68 +149,54 @@ class WorkLogEndTimeView(UpdateView):
             return redirect('/end-time-multi/')
 
 
-class WorkLogEndTime404(TemplateView):
+class WorkLogEndTime404(LoginRequiredMixin, BaseContextData, TemplateView):
     """View showing run time end error"""
     template_name = 'worklog404.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
 
-
-class WorkLogEndTimeMulti(ListView):
+class WorkLogEndTimeMulti(LoginRequiredMixin, BaseContextData, ListView):
     """A view showing a multiple object return exception"""
     model = WorkLog
     template_name = 'worklog_multiple.html'
 
     def get_queryset(self):
+        """A method of filtering data"""
         return WorkLog.objects.filter(employee=self.request.user, end_time__isnull=True)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
 
-
-class WorkLogEndTimeMultiDelete(DeleteView):
+class WorkLogEndTimeMultiDelete(LoginRequiredMixin, UserPassesTestMixin, BaseContextData, DeleteView):
     """View showing multiple object return exception - deleting selected one"""
     model = WorkLog
     success_url = reverse_lazy('worklog')
     template_name = 'worklog_delete.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
+    def test_func(self):
+        """A method that tests comparsion"""
+        obj = self.get_object()
+        return self.request.user == obj.employee
 
 
-class WorkLogReportView(FormView):
+class WorkLogReportView(LoginRequiredMixin, BaseContextData, FormView):
+    """View showing report preparation"""
     form_class = WorkLogReportForm
     template_name = 'worklog_report.html'
     success_url = reverse_lazy('show_report')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
-
     def form_valid(self, form):
+        """The method for sending data in a session"""
         self.request.session['start_time'] = str(form.cleaned_data['start_time'])
         self.request.session['end_time'] = str(form.cleaned_data['end_time'])
         return super().form_valid(form)
 
 
-class WorkLogReportShow(ListView):
+class WorkLogReportShow(LoginRequiredMixin, BaseContextData, ListView):
+    """A view showing the report"""
     model = WorkLog
     template_name = 'worklog_report_show.html'
     context_object_name = 'objects'
 
     def get_queryset(self):
+        """A method of filtering data from the database"""
         start_time = self.request.session.get('start_time')
         end_time = self.request.session.get('end_time')
 
@@ -223,19 +205,15 @@ class WorkLogReportShow(ListView):
                                           end_time__date__lte=end_time, state=True).order_by('start_time')
         return WorkLog.objects.none()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
 
-
-class WorkLogNoEventView(CreateView):
+class WorkLogNoEventView(LoginRequiredMixin, BaseContextData, CreateView):
+    """View showing the no event form"""
     form_class = WorkLogNoEventForm
     template_name = 'worklog_no_event.html'
     success_url = reverse_lazy('worklog')
 
     def form_valid(self, form):
+        """A method of filtering data, creating new object and sending an e-mail"""
         start_time = form.cleaned_data['start_time']
         end_time = form.cleaned_data['end_time']
         tasks = form.cleaned_data['tasks']
@@ -245,6 +223,7 @@ class WorkLogNoEventView(CreateView):
                 form.add_error(None, "W danym dniu istnieje zarejestrowane rozpoczęcie i zakończenie czasu pracy")
                 return self.form_invalid(form)
             WorkLog.objects.create(start_time=start_time, end_time=end_time, tasks=tasks, state=False,
+                                   name='Brak zdarzenia',
                                    employee=self.request.user)
 
             user_team = self.request.user.teams.all()
@@ -267,93 +246,104 @@ class WorkLogNoEventView(CreateView):
 
         return HttpResponseRedirect(self.success_url)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
 
-class WorkLogTimeCorrectionView(FormView):
+class WorkLogTimeCorrectionView(LoginRequiredMixin, BaseContextData, FormView):
+    """A view that retrives data from database"""
     form_class = WorkLogTimeCorrectionForm
     template_name = 'worklog_time_correction.html'
     success_url = reverse_lazy('time_correction')
 
     def form_valid(self, form):
+        """A method that retrives daa from the database, redirects to UpdateView, and handles if blocks"""
         date_field = form.cleaned_data['date_field']
         if not date_field:
             form.add_error(None, 'Należy podać poprawną datę')
             return self.form_invalid(form)
-        try:
-            work_log_record = WorkLog.objects.get(employee=self.request.user, start_time__date__gte=date_field, end_time__date__lte=date_field)
-        except ObjectDoesNotExist:
-            return redirect('/time-correction404/')
+        work_log_record = WorkLog.objects.filter(
+            employee=self.request.user).filter(
+            Q(start_time__date=date_field, end_time__date=date_field) |
+            Q(start_time__date__gte=date_field, end_time__date__lte=date_field + timedelta(days=1))).first()
+        if work_log_record is None:
+            form.add_error(None,
+                           'Wyszukanie rekordu do wniosku o korektę czasu pracy jest niemożliwe, ponieważ dla wskazanej daty nie istnieje zarejestrowany czas pracy.')
+            return self.form_invalid(form)
         return redirect(reverse('time_correction_update', kwargs={'pk': work_log_record.pk}))
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
 
-class WorkLogTimCorrection404(TemplateView):
+class WorkLogTimCorrection404(LoginRequiredMixin, BaseContextData, TemplateView):
     """View showing time correction error"""
     template_name = 'time_correction404.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
 
-class WorkLogTimeCorrectionUpdateView(UpdateView):
+class WorkLogTimeCorrectionUpdateView(LoginRequiredMixin, UserPassesTestMixin, BaseContextData, UpdateView):
+    """View showing update of time correction"""
     model = WorkLog
     form_class = WorkLogCorrectionUpdateForm
     template_name = 'worklog_correction_update.html'
     success_url = reverse_lazy('worklog')
 
+    def test_func(self):
+        """A method that tests comparsion"""
+        obj = self.get_object()
+        return self.request.user == obj.employee
+
     def get_initial(self):
+        """Method for passing initial data to the form"""
         initial = super().get_initial()
         worklog = self.get_object()
         initial['start_time'] = worklog.start_time.strftime('%Y-%m-%dT%H:%M')
         initial['end_time'] = worklog.end_time.strftime('%Y-%m-%dT%H:%M')
         return initial
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
-
     def form_valid(self, form):
+        """Method for changing the flag in the status field"""
         form.instance.state = False
+        form.instance.name = 'Korekta czasu pracy'
         return super().form_valid(form)
 
-class WorkLogAcceptanceView(ListView):
+
+class WorkLogAcceptanceView(LoginRequiredMixin, UserPassesTestMixin, BaseContextData, ListView):
+    """View showing records of employees to be approved or denied by team_lead"""
     model = WorkLog
     template_name = 'worklog_acceptance.html'
 
+    def test_func(self):
+        """A method that tests comparsion"""
+        user_role = TeamUser.objects.get(user=self.request.user)
+        return user_role.role == 'team_lead'
+
     def get_queryset(self):
-        user_team = TeamUser.objects.filter(user=self.request.user).values_list('team',flat=True)
+        """A method of filtering data from the database"""
+        user_team = TeamUser.objects.filter(user=self.request.user).values_list('team', flat=True)
         return WorkLog.objects.filter(state=False, employee__teamuser__team__in=user_team)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['greeting'] = f"{self.request.user.first_name}"
-        return context
 
-class WorkLogAcceptanceDeleteView(DeleteView):
+class WorkLogAcceptanceDeleteView(LoginRequiredMixin, UserPassesTestMixin, BaseContextData, DeleteView):
+    """View showing entries to reject"""
     model = WorkLog
     success_url = reverse_lazy('acceptance')
     template_name = 'worklog_acceptance_delete.html'
 
-class WorkLogAcceptanceUpdateView(UpdateView):
+    def test_func(self):
+        """A method that tests comparsion"""
+        user_role = TeamUser.objects.get(user=self.request.user)
+        return user_role.role == 'team_lead'
+
+
+class WorkLogAcceptanceUpdateView(LoginRequiredMixin, UserPassesTestMixin, BaseContextData, UpdateView):
+    """A view that commits a record"""
     model = WorkLog
     fields = ['state', 'start_time', 'end_time', 'employee', 'tasks']
     success_url = reverse_lazy('acceptance')
     template_name = 'worklog_acceptance_update.html'
 
+    def test_func(self):
+        """A method that tests comparsion"""
+        user_role = TeamUser.objects.get(user=self.request.user)
+        return user_role.role == 'team_lead'
+
     def get(self, request, *args, **kwargs):
+        """A method that changes the flag in the state field without user action"""
         self.object = self.get_object()
         self.object.state = True
         self.object.save()

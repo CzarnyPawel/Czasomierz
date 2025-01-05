@@ -43,7 +43,7 @@
                 <tr>
                 <td>{{ object.employee.first_name }}</td>
                 <td>{{ object.employee.last_name }}</td>
-                <td></td>
+                <td>{{ object.name }}</td>
                 <td>{{ object.start_time.date }}</td>
                 <td>{{ object.start_time.time }}</td>
                 <td>{{ object.end_time.date }}</td>
@@ -57,5 +57,8 @@
             </tbody>
         </table>
     </div>
+    <div class="row">
+            <div class="col-sm-1"><a href="{% url 'worklog' %}" class="btn btn-secondary">Powrót</a></div>
+        </div>
 
 {% endblock content %}
