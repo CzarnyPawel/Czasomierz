@@ -1,5 +1,10 @@
+from tkinter.constants import CASCADE
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from workalendar.europe import Poland
+from datetime import datetime, timedelta
 # Create your models here.
 
 class User(AbstractUser):
@@ -24,6 +29,8 @@ class TeamUser(models.Model):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     class Meta:
         unique_together = ('user', 'team')
+    def __str__(self):
+        return f'{self.user} - {self.team} - {self.role}'
 
 class WorkLog(models.Model):
     start_time = models.DateTimeField()
@@ -34,3 +41,29 @@ class WorkLog(models.Model):
     employee = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):
         return f'{self.employee}'
+
+class AmountOfLeave(models.Model):
+    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    year = models.PositiveIntegerField()
+    days_to_use = models.PositiveIntegerField()
+    used_days = models.PositiveIntegerField(default=0)
+    class Meta:
+        unique_together = ('employee', 'year')
+
+
+class OffWorkLog(models.Model):
+    STATUS_CHOICES = [
+        ('oczekuje', 'Oczekuje'),
+        ('zaakceptowany', 'Zaakceptowany'),
+        ('odrzucony', 'Odrzucony'),
+    ]
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    name = models.CharField(max_length=50, default='Urolp wypoczynkowy')
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES)
+    reason = models.CharField(max_length=100, null=True)
+    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount_of_leave = models.ForeignKey(AmountOfLeave, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.employee.username}, {self.start_date} - {self.end_date}'
