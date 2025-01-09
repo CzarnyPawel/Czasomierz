@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Czasomierz - raport urlopy{% endblock title %}
+{% block title %}Czasomierz - Akceptacje{% endblock title %}
 {% block button1 %}Witaj, {{ greeting }}{% endblock button1 %}
 {% block button2 %}<a href="{% url 'logout' %}" class="btn btn-light">Wyloguj</a>{% endblock button2 %}
 {% block menu %}
@@ -20,22 +20,28 @@
     </nav>
 {% endblock menu %}
 {% block content %}
+
     <div class="container mt-3">
-        <h3>Raport urlopów pracownika</h3>
+        <h3>Wnioski urlopowe przedstawione do akceptacji</h3>
 
         <table class="table table-hover">
             <thead>
             <tr>
-                <th>Rodzaj urlopu</th>
+                <th>Imię</th>
+                <th>Nazwisko</th>
+                <th>Rodzaj wniosku</th>
                 <th>Data rozpoczęcia</th>
                 <th>Data zakończenia</th>
                 <th>Status</th>
-                <th>Powód (w przypadku odrzucenia)</th>
+                <th>Akceptacja</th>
+                <th>Odrzucenie</th>
             </tr>
             </thead>
             <tbody>
             {% for object in object_list %}
                 <tr>
+                <td>{{ object.employee.first_name }}</td>
+                <td>{{ object.employee.last_name }}</td>
                 <td>{{ object.name }}</td>
                 <td>{{ object.start_date.date }}</td>
                 <td>{{ object.end_date.date }}</td>
@@ -46,19 +52,17 @@
                 {% else %}
                     <td class="text-danger">{{ object.status }}</td>
                 {% endif %}
-                {% if object.reason is None %}
-                    <td></td>
-                {% else %}
-                    <td>{{ object.reason }}</td>
-                {% endif %}
-                {% empty %}
-                <p class="text-warning">Brak dostępnych danych dla wskazanego okresu</p>
+                <td><a href="/update-vacation/{{ object.id }}/" class="btn btn-success">Akceptuj</a></td>
+                <td><a href="/update-reject/{{ object.id }}/" class="btn btn-danger">Odrzuć</a></td>
+            {% empty %}
+                <p class="text-warning">Brak złożonych wniosków urlopowych do akceptacji</p>
             {% endfor %}
             </tr>
             </tbody>
         </table>
-        <div class="row">
+    </div>
+    <div class="row">
             <div class="col-sm-1"><a href="{% url 'offworklog' %}" class="btn btn-secondary">Powrót</a></div>
         </div>
-    </div>
+
 {% endblock content %}

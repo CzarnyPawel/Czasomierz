@@ -10,12 +10,13 @@ from django.views.generic import TemplateView, CreateView, UpdateView, ListView,
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy, reverse
 from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm, WorkLogEndTimeForm, WorkLogReportForm, \
-    WorkLogNoEventForm, WorkLogTimeCorrectionForm, WorkLogCorrectionUpdateForm, OffWorkLogApplicationForm
+    WorkLogNoEventForm, WorkLogTimeCorrectionForm, WorkLogCorrectionUpdateForm, OffWorkLogApplicationForm, \
+    OffWorkLogVacationUpdateForm
 from .models import User, WorkLog, TeamUser, OffWorkLog, AmountOfLeave, UsedDays
 from datetime import datetime, date, time, timedelta
 from django.core.mail import EmailMultiAlternatives
 from workalendar.europe import Poland
-
+cal = Poland()
 
 # Create your views here.
 
@@ -434,6 +435,23 @@ class OffWorkLogApplicationView(LoginRequiredMixin, BaseContextData, CreateView)
         u_days.used_days += check_vacation_days
         u_days.save()
 
+        user_team = self.request.user.teams.all()
+        team_lead = TeamUser.objects.filter(team__in=user_team, role='team_lead')
+        if team_lead.exists():
+            team_lead_email = team_lead.first().user.email
+        else:
+            form.add_error(None,
+                           "W zespole do którego należy użytkownik nie zdefiniowano przełożonego. Należy skontaktować się z działem kadr")
+            return self.form_invalid(form)
+        subject = 'Czasomierz: Wniosek urlopowy'
+        from_email = 'czasomierz.info@gmail.com'
+        to = team_lead_email
+        text_content = 'W aplikacji Czasomierz w zakładce Akceptacje oczekuje nowy wniosek urlopowy.'
+        html_content = '<p>W aplikacji Czasomierz w zakładce Akceptacje oczekuje nowy wniosek urlopowy.</p>'
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        msg.attach_alternative(html_content, 'text/html')
+        msg.send()
+
         return HttpResponseRedirect(self.success_url)
 
 class OffWorkLogReportShow(LoginRequiredMixin, BaseContextData, ListView):
@@ -454,3 +472,74 @@ class OffWorkLogReportShow(LoginRequiredMixin, BaseContextData, ListView):
         if self.request.user.is_authenticated:
             context['role'] = TeamUser.objects.get(user=self.request.user).role
         return context
+
+class OffWorkLogAcceptanceView(LoginRequiredMixin, UserPassesTestMixin, BaseContextData, ListView):
+    """View showing applications of employees to be approved or rejected by team_lead"""
+    model = OffWorkLogReportShow
+    template_name = 'offworklog_acceptance.html'
+
+    def test_func(self):
+        """A method that tests comparsion"""
+        user_role = TeamUser.objects.get(user=self.request.user)
+        return user_role.role == 'team_lead'
+
+    def get_queryset(self):
+        """A method of filtering data from the database"""
+        user_team = TeamUser.objects.filter(user=self.request.user).values_list('team', flat=True)
+        return OffWorkLog.objects.filter(status='oczekuje', employee__teamuser__team__in=user_team)
+
+class OffWorkLogAcceptanceUpdateView(LoginRequiredMixin, UserPassesTestMixin, BaseContextData, UpdateView):
+    """A view that commits a vacation applications"""
+    model = OffWorkLog
+    fields = ['status', 'start_date', 'end_date', 'employee', 'reason']
+    success_url = reverse_lazy('vacation-acceptance')
+    template_name = 'offworklog_acceptance_update.html'
+
+    def test_func(self):
+        """A method that tests comparsion"""
+        user_role = TeamUser.objects.get(user=self.request.user)
+        return user_role.role == 'team_lead'
+
+    def get(self, request, *args, **kwargs):
+        """A method that changes the flag in the state field without user action"""
+        self.object = self.get_object()
+        self.object.status = 'zaakceptowany'
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+class OffWorkLogVacationRejectUpdateView(LoginRequiredMixin, UserPassesTestMixin, BaseContextData, UpdateView):
+    """View showing update of time correction"""
+    model = OffWorkLog
+    form_class = OffWorkLogVacationUpdateForm
+    template_name = 'offworklog_vacation_update.html'
+    success_url = reverse_lazy('offworklog')
+    def test_func(self):
+        """A method that tests comparsion"""
+        user_role = TeamUser.objects.get(user=self.request.user)
+        return user_role.role == 'team_lead'
+
+    def form_valid(self, form):
+        """The method for sending data in a session and for decremantation"""
+        self.request.session['reason'] = str(form.cleaned_data['reason'])
+        off_work_log = self.get_object()
+        employee = off_work_log.employee
+        start_date = off_work_log.start_date
+        end_date = off_work_log.end_date
+
+        numbers_of_days = cal.get_working_days_delta(start_date, end_date) + 1
+        try:
+            used_days = UsedDays.objects.get(employee=employee)
+            used_days.used_days -= numbers_of_days
+            used_days.save()
+        except UsedDays.DoesNotExist:
+            form.add_error(None, 'Wskazany obiekt nie został odnaleziony')
+
+        return super().form_valid(form)
+
+    def get_object(self, queryset = None):
+        reason = self.request.session.get('reason')
+        self.object = super().get_object(queryset)
+        self.object.status = 'odrzucony'
+        self.object.reason = reason
+        return self.object
+

@@ -67,7 +67,7 @@ class OffWorkLog(models.Model):
     amount_of_leave = models.ForeignKey(AmountOfLeave, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.employee.first_name}, {self.start_date} - {self.end_date}'
+        return f'{self.employee.first_name}, {self.start_date.date()} - {self.end_date.date()} status: {self.status}'
 
 class UsedDays(models.Model):
     used_days = models.PositiveIntegerField(default=0)

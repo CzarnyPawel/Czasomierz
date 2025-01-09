@@ -27,8 +27,8 @@
     <div class="row mb-3 align-items-center">
         <div class="col-sm-3"></div>
         {% if days > 0 %}
-            <p class="text-bg-success col-sm-6">Liczba dni urlopu do wykorzystania: <strong>{{ days }}</strong> (w tym
-                urlop zaległy: <strong>{{ days_outstanding }})</strong></p>
+            <p class="text-bg-success col-sm-6">Liczba dni urlopu do wykorzystania: <strong>{{ days }}</strong>
+                {% if days > 26 %}(w tym urlop zaległy: <strong>{{ days_outstanding }})</strong>{% endif %}</p>
         {% else %}
             <p class="text-bg-danger col-sm-6">Liczba dni urlopu do wykorzystania: <strong>{{ days }}</strong></p>
         {% endif %}

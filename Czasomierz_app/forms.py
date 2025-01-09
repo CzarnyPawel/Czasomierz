@@ -165,3 +165,10 @@ class OffWorkLogApplicationForm(forms.ModelForm):
                 'Należy podać poprawną datę rozpoczęcia i zakończenia urlopu'
             )
         return cleaned_data
+
+class OffWorkLogVacationUpdateForm(forms.ModelForm):
+    class Meta:
+        model = OffWorkLog
+        fields = ['reason']
+
+    reason = forms.CharField(label='Uzasadnienie odrzucenia wniosku', widget=forms.Textarea)
