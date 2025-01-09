@@ -46,10 +46,11 @@ class AmountOfLeave(models.Model):
     employee = models.ForeignKey(User, on_delete=models.CASCADE)
     year = models.PositiveIntegerField()
     days_to_use = models.PositiveIntegerField()
-    used_days = models.PositiveIntegerField(default=0)
     class Meta:
         unique_together = ('employee', 'year')
 
+    def __str__(self):
+        return f'{self.employee.first_name}, year: {self.year}, days: {self.days_to_use}'
 
 class OffWorkLog(models.Model):
     STATUS_CHOICES = [
@@ -60,10 +61,16 @@ class OffWorkLog(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     name = models.CharField(max_length=50, default='Urolp wypoczynkowy')
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='oczekuje')
     reason = models.CharField(max_length=100, null=True)
     employee = models.ForeignKey(User, on_delete=models.CASCADE)
     amount_of_leave = models.ForeignKey(AmountOfLeave, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.employee.username}, {self.start_date} - {self.end_date}'
+        return f'{self.employee.first_name}, {self.start_date} - {self.end_date}'
+
+class UsedDays(models.Model):
+    used_days = models.PositiveIntegerField(default=0)
+    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    def __str__(self):
+        return f'{self.employee.first_name}, {self.used_days}'

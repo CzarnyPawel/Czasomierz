@@ -10,7 +10,7 @@
                     <a class="nav-link" href="{% url 'worklog' %}">Czas pracy</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Urlopy</a>
+                    <a class="nav-link" href="{% url 'offworklog' %}">Urlopy</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link disabled" href="#">Kalendarz</a>
@@ -34,7 +34,7 @@
         
     <div class="row mb-3 align-items-center">
             <div class="col-sm-3"></div>
-            <div class="col-sm-3"><label for="{{ form.end_time.id_for_label }}">{{ form.start_time.label }}</label></div>
+            <div class="col-sm-3"><label for="{{ form.end_time.id_for_label }}">{{ form.end_time.label }}</label></div>
             <div class="col-sm-4">{{ form.end_time }}</div>
         </div>
         <div class="row">

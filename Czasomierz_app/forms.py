@@ -6,8 +6,9 @@ from django import forms
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.forms import PasswordInput
+from workalendar.core import cleaned_date
 
-from .models import User, TeamUser, WorkLog
+from .models import User, TeamUser, WorkLog, OffWorkLog
 
 
 class LoginForm(forms.Form):
@@ -139,5 +140,28 @@ class WorkLogCorrectionUpdateForm(forms.ModelForm):
         if start_time is None or end_time is None:
             raise ValidationError(
                 'Należy podać poprawną datę rozpoczęcia i zakończenia czasu pracy'
+            )
+        return cleaned_data
+
+
+class OffWorkLogApplicationForm(forms.ModelForm):
+    class Meta:
+        model = OffWorkLog
+        fields = ['start_date', 'end_date', 'name']
+
+    name = forms.CharField(label='Rodzaj urlopu', disabled=True)
+    start_date = forms.DateTimeField(label='Data rozpoczęcia urlopu', widget=forms.DateTimeInput(attrs={'type': 'date'}))
+    end_date = forms.DateTimeField(label='Data zakończenia urlopu', widget=forms.DateTimeInput(attrs={'type': 'date'}))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        if start_date > end_date:
+            raise ValidationError(
+                'Data rozpoczęcia urlopu nie może być późniejsza niż data zakończenia urlopu')
+        if start_date is None or end_date is None:
+            raise ValidationError(
+                'Należy podać poprawną datę rozpoczęcia i zakończenia urlopu'
             )
         return cleaned_data

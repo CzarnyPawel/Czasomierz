@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Czasomierz - Czas pracy{% endblock title %}
+{% block title %}Czasomierz - Urlopy{% endblock title %}
 {% block button1 %}Witaj, {{ greeting }}{% endblock button1 %}
 {% block button2 %}<a href="{% url 'logout' %}" class="btn btn-light">Wyloguj</a>{% endblock button2 %}
 {% block menu %}
@@ -21,39 +21,26 @@
 {% endblock menu %}
 {% block content %}
     <div class="row d-flex align-items-center">
+        <div class="row d-flex align-items-center">
         <div class="col-sm-1"></div>
-        <div class="col-sm-4"><a class="btn btn-success button_worklog" href="{% url 'start_time' %}">
+        <div class="col-sm-4"><a class="btn btn-success button_worklog" href="{% url 'application' %}">
             <h4><p class="button2">
-                Rozpoczęcie pracy</p></h4>
+                Wniosek urlopowy</p></h4>
         </a></div>
         <div class="col-sm-2"></div>
-        <div class="col-sm-4"><a class="btn btn-danger button_worklog" href="{% url 'end_time' %}">
-            <h4><p class="button2">
-                Zakończenie pracy</p></h4>
-        </a></div>
-    </div>
-    <br>
-    <hr><br>
-    <div class="row d-flex align-items-center">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-4"><a class="btn btn-info button_worklog" href="{% url 'time_correction' %}">
-            <h4><p class="button2">
-                Korekta czasu pracy</p></h4>
-        </a></div>
-        <div class="col-sm-2"></div>
-        <div class="col-sm-4"><a class="btn btn-warning button_worklog" href="{% url 'no_event' %}">
-            <h4><p class="button2">
-                Brak zdarzenia</p></h4>
-        </a></div>
-    </div>
-    <br><br>
-    <div class="row d-flex align-items-center">
-        <div class="col-sm-1"></div>
         <div class="col-sm-4"><a class="btn btn-secondary button_worklog" href="{% url 'report' %}">
             <h4><p class="button2">
                 Raporty</p></h4>
         </a></div>
-        <div class="col-sm-2"></div>
+    <br>
+    <hr><br><br>
+    <div class="row d-flex align-items-center">
+        <div class="col-sm-1"></div>
+
+    </div>
+    <br>
+    <div class="row d-flex align-items-center">
+        <div class="col-sm-1"></div>
         {% if role == 'team_lead' %}
         <div class="col-sm-4">
             <a class="btn btn-primary button_worklog" href="{% url 'acceptance' %}">

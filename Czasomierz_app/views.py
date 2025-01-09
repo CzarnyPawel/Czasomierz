@@ -1,7 +1,7 @@
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError, MultipleObjectsReturned, ObjectDoesNotExist
-from django.db.models import Q
+from django.db.models import Q, F, ExpressionWrapper, IntegerField
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.template.context_processors import request
@@ -10,16 +10,18 @@ from django.views.generic import TemplateView, CreateView, UpdateView, ListView,
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy, reverse
 from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm, WorkLogEndTimeForm, WorkLogReportForm, \
-    WorkLogNoEventForm, WorkLogTimeCorrectionForm, WorkLogCorrectionUpdateForm
-from .models import User, WorkLog, TeamUser
+    WorkLogNoEventForm, WorkLogTimeCorrectionForm, WorkLogCorrectionUpdateForm, OffWorkLogApplicationForm
+from .models import User, WorkLog, TeamUser, OffWorkLog, AmountOfLeave, UsedDays
 from datetime import datetime, date, time, timedelta
 from django.core.mail import EmailMultiAlternatives
+from workalendar.europe import Poland
 
 
 # Create your views here.
 
 class BaseContextData:
     """Base class for the context_data method"""
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
@@ -364,3 +366,71 @@ class WorkLogAcceptanceUpdateView(LoginRequiredMixin, UserPassesTestMixin, BaseC
         self.object.state = True
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
+
+class OffWorkLogView(LoginRequiredMixin, TemplateView):
+    """View of the off work log page, where user can do some actions"""
+    template_name = 'offworklog.html'
+
+    def get_context_data(self, **kwargs):
+        """Method for passing data to the context"""
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['greeting'] = f"{self.request.user.first_name}"
+            context['role'] = TeamUser.objects.get(user=self.request.user).role
+        return context
+
+
+class OffWorkLogApplicationView(LoginRequiredMixin, BaseContextData, CreateView):
+    form_class = OffWorkLogApplicationForm
+    template_name = 'offworklog_application.html'
+    success_url = reverse_lazy('offworklog')
+
+    def get_initial(self):
+        """Method for passing initial data to the form"""
+        initial = super().get_initial()
+        initial['name'] = 'Urlop wypoczynkowy'
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            remaining_days = AmountOfLeave.objects.filter(employee=self.request.user)
+            total = sum(day.days_to_use for day in remaining_days)
+            used_days = UsedDays.objects.get(employee=self.request.user)
+            current_year = datetime.now().year
+            days_in_year = AmountOfLeave.objects.get(employee=self.request.user, year=current_year)
+            context['days'] = (total - used_days.used_days)
+            context['days_outstanding'] = ((total - used_days.used_days) - days_in_year.days_to_use)
+        return context
+
+    def form_valid(self, form):
+        initial_start_date = form.cleaned_data['start_date']
+        start_date = initial_start_date.date()
+        initial_end_date = form.cleaned_data['end_date']
+        end_date = initial_end_date.date()
+        cal = Poland()
+        check_vacation_days = cal.get_working_days_delta(start_date, end_date) + 1
+
+        days = AmountOfLeave.objects.filter(employee=self.request.user)
+        total_days = sum(day.days_to_use for day in days)
+        u_days = UsedDays.objects.filter(employee=self.request.user)
+        used_days = sum(day.used_days for day in u_days)
+        available_days = (total_days - used_days)
+
+        if available_days < check_vacation_days:
+            form.add_error(None, 'Brak wystarczającej ilości urlopu')
+            return self.form_invalid(form)
+        amount_of_leave = AmountOfLeave.objects.filter(employee=self.request.user).first()
+
+        if OffWorkLog.objects.filter(employee=self.request.user, start_date__lt=end_date, end_date__gt=start_date):
+            form.add_error(None, 'W podanym okresie istnieje już złożony wniosek o urlop')
+            return self.form_invalid(form)
+
+        off_work_log = OffWorkLog.objects.create(employee=self.request.user, start_date=start_date, end_date=end_date, amount_of_leave=amount_of_leave)
+
+        u_days, created = UsedDays.objects.get_or_create(employee=self.request.user)
+        u_days.used_days += check_vacation_days
+        u_days.save()
+
+        return HttpResponseRedirect(self.success_url)
