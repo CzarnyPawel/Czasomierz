@@ -41,4 +41,5 @@ urlpatterns = [
     path('update-record/<int:pk>/', czas_views.WorkLogAcceptanceUpdateView.as_view(), name='update_record'),
     path('offwork-time/', czas_views.OffWorkLogView.as_view(), name='offworklog'),
     path('application/', czas_views.OffWorkLogApplicationView.as_view(), name='application'),
+    path('vacation-report/', czas_views.OffWorkLogReportShow.as_view(), name='vacation_report'),
 ]

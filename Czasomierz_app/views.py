@@ -427,10 +427,30 @@ class OffWorkLogApplicationView(LoginRequiredMixin, BaseContextData, CreateView)
             form.add_error(None, 'W podanym okresie istnieje już złożony wniosek o urlop')
             return self.form_invalid(form)
 
-        off_work_log = OffWorkLog.objects.create(employee=self.request.user, start_date=start_date, end_date=end_date, amount_of_leave=amount_of_leave)
+        off_work_log = OffWorkLog.objects.create(employee=self.request.user, start_date=start_date, end_date=end_date,
+                                                 amount_of_leave=amount_of_leave)
 
         u_days, created = UsedDays.objects.get_or_create(employee=self.request.user)
         u_days.used_days += check_vacation_days
         u_days.save()
 
         return HttpResponseRedirect(self.success_url)
+
+class OffWorkLogReportShow(LoginRequiredMixin, BaseContextData, ListView):
+    """A view showing the vacation days report"""
+    model = OffWorkLog
+    template_name = 'offworklog_report_show.html'
+
+    def get_queryset(self):
+        """A method of filtering data from the database"""
+
+        if self.request.user:
+            return OffWorkLog.objects.filter(employee=self.request.user).order_by('start_date')
+        return OffWorkLog.objects.none()
+
+    def get_context_data(self, **kwargs):
+        """Method for passing data to the context"""
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['role'] = TeamUser.objects.get(user=self.request.user).role
+        return context

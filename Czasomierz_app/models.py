@@ -62,7 +62,7 @@ class OffWorkLog(models.Model):
     end_date = models.DateTimeField()
     name = models.CharField(max_length=50, default='Urolp wypoczynkowy')
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='oczekuje')
-    reason = models.CharField(max_length=100, null=True)
+    reason = models.CharField(max_length=100, blank=True, null=True)
     employee = models.ForeignKey(User, on_delete=models.CASCADE)
     amount_of_leave = models.ForeignKey(AmountOfLeave, on_delete=models.CASCADE)
 
