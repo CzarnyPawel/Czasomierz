@@ -316,7 +316,7 @@ def test_off_worklog_application_view(client, create_user_with_another_roles):
     assert 'Data rozpoczęcia urlopu nie może być późniejsza niż data zakończenia urlopu' in response.context[
         'form'].non_field_errors()
     response = client.post('/application/',
-                           {'start_date': now().date(), 'end_date': now().date() + timedelta(days=56)})
+                           {'start_date': now().date(), 'end_date': now().date() + timedelta(days=59)})
     assert 'Brak wystarczającej ilości urlopu' in response.context['form'].non_field_errors()
     amount_of_leave = AmountOfLeave.objects.filter(employee=employee1).first()
     OffWorkLog.objects.create(employee=employee1, start_date=now(), end_date=now() + timedelta(days=3),
@@ -327,9 +327,9 @@ def test_off_worklog_application_view(client, create_user_with_another_roles):
     assert 'W podanym okresie istnieje już złożony wniosek o urlop' in response.context['form'].non_field_errors()
     response = client.post('/application/',
                            {'start_date': now().date() + timedelta(days=7),
-                            'end_date': now().date() + timedelta(days=9)})
+                            'end_date': now().date() + timedelta(days=8)})
     assert response.status_code == 302
-    assert UsedDays.objects.get(employee=employee1).used_days == 12
+    assert UsedDays.objects.get(employee=employee1).used_days == 11
     assert len(mail.outbox) == 1
 
 
@@ -390,6 +390,6 @@ def test_off_worklog_vacation_rejected_update_view(client, create_user_with_anot
     client.post('/login/', {'username': 'team_lead2', 'password': 'test'})
     assert OffWorkLog.objects.filter(id=record1.id, status='odrzucony').exists() == False
     response = client.post(f'/update-reject/{record1.id}/', {'reason': 'test'})
-    assert UsedDays.objects.get(employee=employee2).used_days == 15
+    assert UsedDays.objects.get(employee=employee2).used_days == 16
     assert OffWorkLog.objects.filter(id=record1.id, status='odrzucony', reason='test').exists()
     assert response.status_code == 302

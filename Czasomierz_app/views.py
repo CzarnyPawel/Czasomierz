@@ -70,8 +70,10 @@ class UserRegisterView(FormView):
         email = form.cleaned_data['email']
         password = form.cleaned_data['password']
         username = form.cleaned_data['username']
-        User.objects.create_user(username=username, password=password, email=email, first_name=firstname,
+        user = User.objects.create_user(username=username, password=password, email=email, first_name=firstname,
                                  last_name=lastname)
+        AmountOfLeave.objects.create(employee=user, days_to_use=26)
+        UsedDays.objects.create(employee=user, used_days=0)
         return super().form_valid(form)
 
 
@@ -421,8 +423,8 @@ class OffWorkLogApplicationView(LoginRequiredMixin, BaseContextData, CreateView)
             form.add_error(None, 'Brak wystarczającej ilości urlopu')
             return self.form_invalid(form)
         amount_of_leave = AmountOfLeave.objects.filter(employee=self.request.user).first()
-
-        if OffWorkLog.objects.filter(employee=self.request.user, start_date__lt=end_date, end_date__gt=start_date):
+        query = Q(status='oczekuje') | Q(status='zaakceptowany')
+        if OffWorkLog.objects.filter(query, employee=self.request.user, start_date__lte=end_date, end_date__gte=start_date):
             form.add_error(None, 'W podanym okresie istnieje już złożony wniosek o urlop')
             return self.form_invalid(form)
 
