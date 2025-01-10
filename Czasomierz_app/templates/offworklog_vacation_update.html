@@ -40,4 +40,12 @@
             <div class="col-sm-1"><a href="{% url 'worklog' %}" class="btn btn-secondary">Anuluj</a></div>
         </div>
     </form>
+    <div class="row">
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="col-sm-3"></div>
+                <p class="text-danger col-sm-4">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+    </div>
 {% endblock content %}

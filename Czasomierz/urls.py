@@ -14,7 +14,6 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.conf.urls import handler404
 from django.contrib import admin
 from django.urls import path
 from Czasomierz_app import views as czas_views
@@ -45,5 +44,5 @@ urlpatterns = [
     path('vacation-report/', czas_views.OffWorkLogReportShow.as_view(), name='vacation_report'),
     path('vacation-acceptance/', czas_views.OffWorkLogAcceptanceView.as_view(), name='vacation-acceptance'),
     path('update-vacation/<int:pk>/', czas_views.OffWorkLogAcceptanceUpdateView.as_view(), name='update_vacation'),
-    path('update-reject/<int:pk>/', czas_views.OffWorkLogVacationRejectUpdateView.as_view()),
+    path('update-reject/<int:pk>/', czas_views.OffWorkLogVacationRejectUpdateView.as_view(), name='update_reject'),
 ]

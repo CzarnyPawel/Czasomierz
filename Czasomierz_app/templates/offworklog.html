@@ -22,32 +22,43 @@
 {% block content %}
     <div class="row d-flex align-items-center">
         <div class="row d-flex align-items-center">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-4"><a class="btn btn-success button_worklog" href="{% url 'application' %}">
-            <h4><p class="button2">
-                Wniosek urlopowy</p></h4>
-        </a></div>
-        <div class="col-sm-2"></div>
-        <div class="col-sm-4"><a class="btn btn-secondary button_worklog" href="{% url 'vacation_report' %}">
-            <h4><p class="button2">
-                Raporty</p></h4>
-        </a></div>
-    <br>
-    <hr><br><br>
-    <div class="row d-flex align-items-center">
-        <div class="col-sm-1"></div>
-
-    </div>
-    <br>
-    <div class="row d-flex align-items-center">
-        <div class="col-sm-1"></div>
-        {% if role == 'team_lead' %}
-        <div class="col-sm-4">
-            <a class="btn btn-primary button_worklog" href="{% url 'vacation-acceptance' %}">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-4"><a class="btn btn-success button_worklog" href="{% url 'application' %}">
                 <h4><p class="button2">
-                    Akceptacje</p></h4>
-            </a>
+                    Wniosek urlopowy</p></h4>
+            </a></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-4"><a class="btn btn-secondary button_worklog" href="{% url 'vacation_report' %}">
+                <h4><p class="button2">
+                    Raporty</p></h4>
+            </a></div>
+            <br>
+            <hr>
+            <br><br>
+            <div class="row d-flex align-items-center">
+                <div class="col-sm-1"></div>
+
+            </div>
+            <br>
+            <div class="row d-flex align-items-center">
+                <div class="col-sm-1"></div>
+                {% if role == 'team_lead' %}
+                    <div class="col-sm-4">
+                        <a class="btn btn-primary button_worklog" href="{% url 'vacation-acceptance' %}">
+                            <h4><p class="button2">
+                                Akceptacje</p></h4>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                        <div class="col-sm-3"></div>
+                        <p class="text-danger col-sm-4">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
     </div>
 {% endblock content %}

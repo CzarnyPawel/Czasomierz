@@ -1,10 +1,9 @@
-from datetime import datetime, timedelta, date, timezone
+from datetime import datetime, timedelta
 from django.utils.timezone import now
 import pytest
-from django.contrib.auth import get_user_model
 from django.core import mail
-from django.urls import reverse_lazy, reverse
-from .models import User, WorkLog, Team, TeamUser
+from django.urls import reverse
+from .models import User, WorkLog, AmountOfLeave, UsedDays, OffWorkLog
 
 
 # Create your tests here.
@@ -42,7 +41,7 @@ def test_login_view_redirect_after_login(client, create_user):
 
 @pytest.mark.django_db
 def test_homepage_view(client, create_user_with_another_roles):
-    response = client.post('/login/',{'username': 'employee1', 'password': 'test'})
+    response = client.post('/login/', {'username': 'employee1', 'password': 'test'})
     assert response.status_code == 302
     assert response.url == '/'
     response = client.get('/')
@@ -144,7 +143,7 @@ def test_worklog_end_time_multi_delete(client, create_user_model, create_user_wi
     start_time = now()
     obj1 = WorkLog.objects.create(employee=user3, start_time=start_time, end_time=None)
     obj2 = WorkLog.objects.create(employee=user3, start_time=start_time, end_time=None)
-    response = client.post(f'/delete-time/{obj1.id}/')
+    client.post(f'/delete-time/{obj1.id}/')
     assert WorkLog.objects.filter(id=obj1.id).exists() == False
     client.logout()
     client.post('/login/', {'username': 'employee2', 'password': 'test'})
@@ -206,7 +205,8 @@ def test_worklog_time_correction_view(client, create_user_with_another_roles):
                            state=True, tasks='test',
                            name='test')
     response = client.post('/time-correction/', {'date_field': date_field})
-    assert WorkLog.objects.filter(employee=team_lead2, start_time__date=date_time, end_time__date=date_time + timedelta(hours=8))
+    assert WorkLog.objects.filter(employee=team_lead2, start_time__date=date_time,
+                                  end_time__date=date_time + timedelta(hours=8))
     assert response.status_code == 302
     date_time = now() + timedelta(days=5)
     date_field = date_time.date().isoformat()
@@ -227,8 +227,8 @@ def test_worklog_time_correction_update_view(client, create_user_with_another_ro
     client.post('/login/', {'username': 'employee2', 'password': 'test'})
     date_time = now()
     obj = WorkLog.objects.create(employee=employee2, start_time=date_time, end_time=date_time + timedelta(hours=8),
-                           state=True, tasks='test',
-                           name='test')
+                                 state=True, tasks='test',
+                                 name='test')
     print(obj.id, obj.state)
     assert WorkLog.objects.filter(id=obj.id, state=True).exists() == True
     response = client.post(f'/time-correction-update/{obj.id}/',
@@ -237,18 +237,21 @@ def test_worklog_time_correction_update_view(client, create_user_with_another_ro
     assert WorkLog.objects.filter(id=obj.id, state=False, name='Korekta czasu pracy').exists() == True
     assert len(mail.outbox) == 1
 
+
 @pytest.mark.django_db
 def test_worklog_time_correction_email(client, create_user_no_team_lead):
     team, employee5 = create_user_no_team_lead
     client.post('/login/', {'username': 'employee5', 'password': 'test'})
     date_time = now()
     obj = WorkLog.objects.create(employee=employee5, start_time=date_time, end_time=date_time + timedelta(hours=8),
-                           state=True, tasks='test',
-                           name='test')
+                                 state=True, tasks='test',
+                                 name='test')
     response = client.post(f'/time-correction-update/{obj.id}/',
                            {'start_time': date_time + timedelta(hours=2), 'end_time': date_time + timedelta(hours=10)})
-    assert "W zespole do którego należy użytkownik nie zdefiniowano przełożonego. Należy skontaktować się z działem kadr" in response.context['form'].non_field_errors()
+    assert "W zespole do którego należy użytkownik nie zdefiniowano przełożonego. Należy skontaktować się z działem kadr" in \
+           response.context['form'].non_field_errors()
     assert response.status_code == 200
+
 
 @pytest.mark.django_db
 def test_worklog_acceptance_view(client, create_user_with_another_roles):
@@ -256,11 +259,12 @@ def test_worklog_acceptance_view(client, create_user_with_another_roles):
     client.post('/login/', {'username': 'team_lead2', 'password': 'test'})
     date_time = now()
     record1 = WorkLog.objects.create(employee=employee2, start_time=date_time, end_time=date_time + timedelta(hours=8),
-                           state=False, tasks='test',
-                           name='test')
+                                     state=False, tasks='test',
+                                     name='test')
     response = client.get('/acceptance/')
     assert response.status_code == 200
     assert record1 in response.context['object_list']
+
 
 @pytest.mark.django_db
 def test_worklog_acceptance_delete_view(client, create_user_with_another_roles):
@@ -268,12 +272,13 @@ def test_worklog_acceptance_delete_view(client, create_user_with_another_roles):
     client.post('/login/', {'username': 'team_lead1', 'password': 'test'})
     date_time = now()
     obj = WorkLog.objects.create(employee=employee1, start_time=date_time, end_time=date_time + timedelta(hours=8),
-                           state=False, tasks='test',
-                           name='test')
+                                 state=False, tasks='test',
+                                 name='test')
     assert WorkLog.objects.filter(id=obj.id).exists() == True
     response = client.post(reverse('delete_record', args=[obj.id]))
     assert WorkLog.objects.filter(id=obj.id).exists() == False
     assert response.status_code == 302
+
 
 @pytest.mark.django_db(transaction=True)
 def test_worklog_acceptance_update_view(client, create_user_with_another_roles):
@@ -281,9 +286,110 @@ def test_worklog_acceptance_update_view(client, create_user_with_another_roles):
     client.post('/login/', {'username': 'team_lead2', 'password': 'test'})
     date_time = now()
     obj = WorkLog.objects.create(employee=employee2, start_time=date_time, end_time=date_time + timedelta(hours=8),
-                           state=False, tasks='test',
-                           name='test')
+                                 state=False, tasks='test',
+                                 name='test')
     assert WorkLog.objects.filter(id=obj.id, state=False).exists() == True
     response = client.get(reverse('update_record', args=[obj.id]))
     assert WorkLog.objects.filter(id=obj.id, state=True).exists() == True
+    assert response.status_code == 302
+
+
+@pytest.mark.django_db
+def test_off_worklog_view(client, create_user_with_another_roles):
+    client.post('/login/', {'username': 'employee1', 'password': 'test'})
+    response = client.get(reverse('offworklog'))
+    assert response.status_code == 200
+    assert 'offworklog.html' in [t.name for t in response.templates]
+
+
+@pytest.mark.django_db
+def test_off_worklog_application_view(client, create_user_with_another_roles):
+    team1, team2, employee1, employee2, team_lead1, team_lead2 = create_user_with_another_roles
+    client.post('/login/', {'username': 'employee1', 'password': 'test'})
+    AmountOfLeave.objects.create(employee=employee1, year=2024, days_to_use=25)
+    AmountOfLeave.objects.create(employee=employee1, year=2025, days_to_use=25)
+    UsedDays.objects.create(employee=employee1, used_days=10)
+    response = client.get(reverse('application'))
+    assert response.context['days'] == 40
+    assert response.context['days_outstanding'] == 15
+    response = client.post('/application/', {'start_date': now().date() + timedelta(days=1), 'end_date': now().date()})
+    assert 'Data rozpoczęcia urlopu nie może być późniejsza niż data zakończenia urlopu' in response.context[
+        'form'].non_field_errors()
+    response = client.post('/application/',
+                           {'start_date': now().date(), 'end_date': now().date() + timedelta(days=56)})
+    assert 'Brak wystarczającej ilości urlopu' in response.context['form'].non_field_errors()
+    amount_of_leave = AmountOfLeave.objects.filter(employee=employee1).first()
+    OffWorkLog.objects.create(employee=employee1, start_date=now(), end_date=now() + timedelta(days=3),
+                              amount_of_leave=amount_of_leave)
+    response = client.post('/application/',
+                           {'start_date': now().date() + timedelta(days=1),
+                            'end_date': now().date() + timedelta(days=2)})
+    assert 'W podanym okresie istnieje już złożony wniosek o urlop' in response.context['form'].non_field_errors()
+    response = client.post('/application/',
+                           {'start_date': now().date() + timedelta(days=7),
+                            'end_date': now().date() + timedelta(days=9)})
+    assert response.status_code == 302
+    assert UsedDays.objects.get(employee=employee1).used_days == 12
+    assert len(mail.outbox) == 1
+
+
+@pytest.mark.django_db
+def test_off_worklog_report_show(client, create_user_with_another_roles):
+    team1, team2, employee1, employee2, team_lead1, team_lead2 = create_user_with_another_roles
+    client.post('/login/', {'username': 'employee2', 'password': 'test'})
+    AmountOfLeave.objects.create(employee=employee2, year=2025, days_to_use=25)
+    UsedDays.objects.create(employee=employee2, used_days=10)
+    amount_of_leave = AmountOfLeave.objects.filter(employee=employee2).first()
+    record1 = OffWorkLog.objects.create(employee=employee2, start_date=now(), end_date=now() + timedelta(days=3),
+                                        amount_of_leave=amount_of_leave)
+    response = client.get(reverse('vacation_report'))
+    assert response.status_code == 200
+    assert record1 in response.context['object_list']
+    assert 'offworklog_report_show.html' in [t.name for t in response.templates]
+
+
+@pytest.mark.django_db
+def test_off_worklog_acceptance_view(client, create_user_with_another_roles):
+    team1, team2, employee1, employee2, team_lead1, team_lead2 = create_user_with_another_roles
+    AmountOfLeave.objects.create(employee=employee1, year=2025, days_to_use=18)
+    UsedDays.objects.create(employee=employee1, used_days=10)
+    amount_of_leave = AmountOfLeave.objects.filter(employee=employee1).first()
+    record1 = OffWorkLog.objects.create(employee=employee1, start_date=now(), end_date=now() + timedelta(days=3),
+                                        amount_of_leave=amount_of_leave)
+    client.post('/login/', {'username': 'team_lead1', 'password': 'test'})
+    response = client.get(reverse('vacation-acceptance'))
+    assert response.status_code == 200
+    assert record1 in response.context['object_list']
+    client.post('/login/', {'username': 'team_lead2', 'password': 'test'})
+    response = client.get(reverse('vacation-acceptance'))
+    assert not record1 in response.context['object_list']
+
+
+@pytest.mark.django_db
+def test_off_worklog_acceptance_update_view(client, create_user_with_another_roles):
+    team1, team2, employee1, employee2, team_lead1, team_lead2 = create_user_with_another_roles
+    AmountOfLeave.objects.create(employee=employee2, year=2025, days_to_use=15)
+    UsedDays.objects.create(employee=employee2, used_days=5)
+    amount_of_leave = AmountOfLeave.objects.filter(employee=employee2).first()
+    record1 = OffWorkLog.objects.create(employee=employee2, start_date=now(), end_date=now() + timedelta(days=3),
+                                        amount_of_leave=amount_of_leave, status='oczekuje')
+    client.post('/login/', {'username': 'team_lead2', 'password': 'test'})
+    assert OffWorkLog.objects.filter(id=record1.id, status='zaakceptowany').exists() == False
+    client.get(reverse('update_vacation', args=[record1.id]))
+    assert OffWorkLog.objects.filter(id=record1.id, status='zaakceptowany').exists()
+
+
+@pytest.mark.django_db
+def test_off_worklog_vacation_rejected_update_view(client, create_user_with_another_roles):
+    team1, team2, employee1, employee2, team_lead1, team_lead2 = create_user_with_another_roles
+    AmountOfLeave.objects.create(employee=employee2, year=2025, days_to_use=26)
+    UsedDays.objects.create(employee=employee2, used_days=17)
+    amount_of_leave = AmountOfLeave.objects.filter(employee=employee2).first()
+    record1 = OffWorkLog.objects.create(employee=employee2, start_date=now(), end_date=now() + timedelta(days=2),
+                                        amount_of_leave=amount_of_leave, status='oczekuje')
+    client.post('/login/', {'username': 'team_lead2', 'password': 'test'})
+    assert OffWorkLog.objects.filter(id=record1.id, status='odrzucony').exists() == False
+    response = client.post(f'/update-reject/{record1.id}/', {'reason': 'test'})
+    assert UsedDays.objects.get(employee=employee2).used_days == 15
+    assert OffWorkLog.objects.filter(id=record1.id, status='odrzucony', reason='test').exists()
     assert response.status_code == 302

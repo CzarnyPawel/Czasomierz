@@ -1,10 +1,6 @@
-from tkinter.constants import CASCADE
-
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from workalendar.europe import Poland
-from datetime import datetime, timedelta
+
 # Create your models here.
 
 class User(AbstractUser):

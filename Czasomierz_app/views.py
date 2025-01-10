@@ -1,10 +1,8 @@
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import ValidationError, MultipleObjectsReturned, ObjectDoesNotExist
-from django.db.models import Q, F, ExpressionWrapper, IntegerField
-from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import render, redirect
-from django.template.context_processors import request
+from django.db.models import Q
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.views import View
 from django.views.generic import TemplateView, CreateView, UpdateView, ListView, DeleteView
 from django.views.generic.edit import FormView
@@ -13,7 +11,7 @@ from .forms import LoginForm, RegisterForm, WorkLogStartTimeForm, WorkLogEndTime
     WorkLogNoEventForm, WorkLogTimeCorrectionForm, WorkLogCorrectionUpdateForm, OffWorkLogApplicationForm, \
     OffWorkLogVacationUpdateForm
 from .models import User, WorkLog, TeamUser, OffWorkLog, AmountOfLeave, UsedDays
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, timedelta
 from django.core.mail import EmailMultiAlternatives
 from workalendar.europe import Poland
 cal = Poland()
@@ -410,7 +408,7 @@ class OffWorkLogApplicationView(LoginRequiredMixin, BaseContextData, CreateView)
         start_date = initial_start_date.date()
         initial_end_date = form.cleaned_data['end_date']
         end_date = initial_end_date.date()
-        cal = Poland()
+
         check_vacation_days = cal.get_working_days_delta(start_date, end_date) + 1
 
         days = AmountOfLeave.objects.filter(employee=self.request.user)

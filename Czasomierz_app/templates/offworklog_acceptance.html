@@ -54,7 +54,7 @@
                 {% endif %}
                 <td><a href="/update-vacation/{{ object.id }}/" class="btn btn-success">Akceptuj</a></td>
                 <td><a href="/update-reject/{{ object.id }}/" class="btn btn-danger">Odrzuć</a></td>
-            {% empty %}
+                {% empty %}
                 <p class="text-warning">Brak złożonych wniosków urlopowych do akceptacji</p>
             {% endfor %}
             </tr>
@@ -62,7 +62,14 @@
         </table>
     </div>
     <div class="row">
-            <div class="col-sm-1"><a href="{% url 'offworklog' %}" class="btn btn-secondary">Powrót</a></div>
-        </div>
-
+        <div class="col-sm-1"><a href="{% url 'offworklog' %}" class="btn btn-secondary">Powrót</a></div>
+    </div>
+    <div class="row">
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="col-sm-3"></div>
+                <p class="text-danger col-sm-4">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+    </div>
 {% endblock content %}

@@ -4,15 +4,18 @@ from django.contrib.auth import get_user_model
 from .models import User, Team, TeamUser
 from django.test import Client
 
+
 @pytest.fixture
 def client():
     client = Client()
     return client
 
+
 @pytest.fixture
 def create_user():
     user = User.objects.create_user(username='test', password='test')
     return user
+
 
 @pytest.fixture
 def create_user_with_another_roles():
@@ -31,11 +34,13 @@ def create_user_with_another_roles():
 
     return team1, team2, employee1, employee2, team_lead1, team_lead2
 
+
 @pytest.fixture
 def create_user_model():
-    #pobieram aktualny model użytkownika, aby móc tworzyć nowych użytkowników
+    # pobieram aktualny model użytkownika, aby móc tworzyć nowych użytkowników
     User = get_user_model()
     return User
+
 
 @pytest.fixture
 def create_user_no_team_lead():
