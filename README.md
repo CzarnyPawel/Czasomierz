@@ -16,52 +16,77 @@ skutecznym zarządzaniu, a także pracownikom w dostępie do danych związanych 
 
 #### Użyte technologie:
 
-• Język programowania: Python 3.10
-• Projekt opiera się głównie na funkcjonalnościach dostarczonych przez framework Django:
-◦ Moduły do autoryzacji i uwierzytelniania: login, logout, LoginRequiredMixin, UserPassesTestMixin,
-◦ Obsługa zapytań do bazy danych: Q,
-◦ Obsługa odpowiedzi HTTP: HttpResponseRedirect,
-◦ Skróty do przekierowań: redirect,
-◦ Klasy widoków: View, TemplateView, CreateView, UpdateView, ListView, DeleteView, FormView,
-◦ Obsługa URL: reverse_lazy, reverse.
-• Formularze – w projekcie zastosowano formularze, które zostały dostosowane do wymagań danego widoku, poprzez
-nadpisanie poszczególnych pól oraz zastosowanie odpowiednich etykiet czy widgetów.
-• W projekcie zastosowano następujące modele:
-◦ User: nadpisany własnym modelem dziedziczącym po AbstractUser. W związku z tym zaktualizowano również ustawienia w
-pliku settings.py, aby wskazać Django, z jakiego domyślnego modelu powinno korzystać dodano zapis (AUTH_USER_MODEL),
-◦ WorkLog: model obsługujący moduł rejestracji czasu pracy w projekcie. Obsługuje takie atrybuty jak:
-▪ start_time: zawiera datę i czas rozpoczęcia pracy,
-▪ end_time: zawiera datę i czas zakończenia pracy,
-▪ tasks: opis wykonanych zadań, używany przy rejestracji zakończenia czasu pracy,
-▪ state: stan aktywności logu pracy, domyślnie posiada status True. Status jest zmieniany na False w momencie złożenia
-wniosku o brak zdarzenia bądź korektę czasu pracy,
-▪ name: nazwa logu. Domyślnie ma przypisaną wartość „Rejestracja czasu pracy”
-▪ employee: przypisanie do użytkownika z usuwaniem kaskadowym.
-◦ TeamUser: model łączący relacją wiele-do-wielu modele User oraz Team. Model posiada dodatkowe pole ‘role’, które
-opisuje stanowisko danego użytkownika w ramach przypisanego zespołu.
-◦ Team: model obsługujący następujące atrybuty:
-▪ name: nazwa zespołu, do którego może być przypisany użytkownik,
-▪ description: zawiera opis zespołu.
-◦ OffWorkLog: model obsługujący moduł urlopów w projekcie. Obsługuje takie atrybuty jak:
-▪ start_date: zawiera datę rozpoczęcia urlopu,
-▪ end_date: zawiera datę zakończenia urlopu,
-▪ name: nazwa logu. Domyślnie ma przypisaną wartość „Urlop wypoczynkowy”
-▪ status: zawiera status na jakim aktualnie znajduje się wniosek urlopowy,
-▪ reason: zawiera opis w sytuacji, gdy akceptujący odrzuci złożony wniosek,
-▪ employee: przypisanie do użytkownika z usuwaniem kaskadowym,
-▪ amount_of_leave: przypisanie do modelu z określoną liczbą dni urlopu w danym roku wraz z usuwaniem kaskadowym.
-◦ AmountOfLeave: model obsługujący przyznaną liczbę dni urlopowych danemu użytkownikowi w danym roku. Obsługuje takie
-atrybuty jak:
-▪ year: zawiera rok do którego przypisana jest liczba dni urlopu,
-▪ days_to_use: zawiera liczbę dni urlopu, z których może skorzystać użytkownik,
-▪ employee: przypisanie do użytkownika z usuwaniem kaskadowym.
-◦ UsedDays: model obsługujący wykorzystaną liczbę dni przez pracownika. Obsługuje następujące atrybuty:
-▪ used_days: wykorzystana liczba dni,
-▪ employee: przypisanie do użytkownika z usuwaniem kaskadowym.
-• Obsługa dat i czasu. Użyto biblioteki datetime i timedelta do manipulacji datami i czasem.
-• Obsługa e-maili: zastosowano EmailMultiAlternatives do wysyłania e-maili z systemu.
-• Kalendarz: wykorzystanie klasy Poland z biblioteki workalendar.europe do obsługi specyficznych dla Polski dni wolnych
-od pracy.
+##### Język programowania: Python 3.10
+
+##### Projekt opiera się głównie na funkcjonalnościach dostarczonych przez framework Django:
+
+* Moduły do autoryzacji i uwierzytelniania: login, logout, LoginRequiredMixin, UserPassesTestMixin,
+* Obsługa zapytań do bazy danych: Q,
+* Obsługa odpowiedzi HTTP: HttpResponseRedirect,
+* Skróty do przekierowań: redirect,
+* Klasy widoków: View, TemplateView, CreateView, UpdateView, ListView, DeleteView, FormView,
+* Obsługa URL: reverse_lazy, reverse.
+
+##### Formularze
+
+W projekcie zastosowano formularze, które zostały dostosowane do wymagań danego widoku, poprzez nadpisanie
+poszczególnych pól oraz zastosowanie odpowiednich etykiet czy widgetów.
+
+##### W projekcie zastosowano następujące modele:
+
+1. User: nadpisany własnym modelem dziedziczącym po AbstractUser. W związku z tym zaktualizowano również ustawienia w
+   pliku settings.py, aby wskazać Django, z jakiego domyślnego modelu powinno korzystać dodano zapis (AUTH_USER_MODEL),
+2. WorkLog: model obsługujący moduł rejestracji czasu pracy w projekcie. Obsługuje takie atrybuty jak:
+
+* start_time: zawiera datę i czas rozpoczęcia pracy,
+* end_time: zawiera datę i czas zakończenia pracy,
+* tasks: opis wykonanych zadań, używany przy rejestracji zakończenia czasu pracy,
+* state: stan aktywności logu pracy, domyślnie posiada status True. Status jest zmieniany na False w momencie złożenia
+  wniosku o brak zdarzenia bądź korektę czasu pracy,
+* name: nazwa logu. Domyślnie ma przypisaną wartość „Rejestracja czasu pracy”
+* employee: przypisanie do użytkownika z usuwaniem kaskadowym.
+
+3. TeamUser: model łączący relacją wiele-do-wielu modele User oraz Team. Model posiada dodatkowe pole ‘role’, które
+   opisuje stanowisko danego użytkownika w ramach przypisanego zespołu.
+
+4. Team: model obsługujący następujące atrybuty:
+
+* name: nazwa zespołu, do którego może być przypisany użytkownik,
+* description: zawiera opis zespołu.
+
+5. OffWorkLog: model obsługujący moduł urlopów w projekcie. Obsługuje takie atrybuty jak:
+
+* start_date: zawiera datę rozpoczęcia urlopu,
+* end_date: zawiera datę zakończenia urlopu,
+* name: nazwa logu. Domyślnie ma przypisaną wartość „Urlop wypoczynkowy”
+* status: zawiera status na jakim aktualnie znajduje się wniosek urlopowy,
+* reason: zawiera opis w sytuacji, gdy akceptujący odrzuci złożony wniosek,
+* employee: przypisanie do użytkownika z usuwaniem kaskadowym,
+* amount_of_leave: przypisanie do modelu z określoną liczbą dni urlopu w danym roku wraz z usuwaniem kaskadowym.
+
+6. AmountOfLeave: model obsługujący przyznaną liczbę dni urlopowych danemu użytkownikowi w danym roku. Obsługuje takie
+   atrybuty jak:
+
+* year: zawiera rok do którego przypisana jest liczba dni urlopu,
+* days_to_use: zawiera liczbę dni urlopu, z których może skorzystać użytkownik,
+* employee: przypisanie do użytkownika z usuwaniem kaskadowym.
+
+7. UsedDays: model obsługujący wykorzystaną liczbę dni przez pracownika. Obsługuje następujące atrybuty:
+
+* used_days: wykorzystana liczba dni,
+* employee: przypisanie do użytkownika z usuwaniem kaskadowym.
+
+##### Obsługa dat i czasu.
+
+* Użyto biblioteki datetime i timedelta do manipulacji datami i czasem.
+
+##### Obsługa e-maili:
+
+* Zastosowano EmailMultiAlternatives do wysyłania e-maili z systemu.
+
+##### Kalendarz:
+
+* wykorzystanie klasy Poland z biblioteki workalendar.europe do obsługi specyficznych dla Polski dni wolnych od pracy.
 
 ### 2. Instrukcje instalacji
 
@@ -243,51 +268,74 @@ effective management, as well as employees in access to data related to the hist
 
 #### Technologies used:
 
-• Programming language: Python 3.10
-• The project is mainly based on functionalities provided by the Django framework:
-◦ Authorization and authentication modules: login, logout, LoginRequiredMixin, UserPassesTestMixin,
-◦ Database query support: Q,
-◦ HTTP response support: HttpResponseRedirect,
-◦ Redirection shortcuts: redirect,
-◦ View classes: View, TemplateView, CreateView, UpdateView, ListView, DeleteView, FormView,
-◦ URL support: reverse_lazy, reverse.
-• Forms – the project uses forms that have been adapted to the requirements of a given view by overwriting individual
+##### Programming language: Python 3.10
+
+##### The project is mainly based on functionalities provided by the Django framework:
+
+* Authorization and authentication modules: login, logout, LoginRequiredMixin, UserPassesTestMixin,
+* Database query support: Q,
+* HTTP response support: HttpResponseRedirect,
+* Redirection shortcuts: redirect,
+* View classes: View, TemplateView, CreateView, UpdateView, ListView, DeleteView, FormView,
+* URL support: reverse_lazy, reverse.
+
+##### Forms
+
+The project uses forms that have been adapted to the requirements of a given view by overwriting individual
 fields and using appropriate labels or widgets.
-• The following models were used in the project:
-◦ User: overwritten with its own model inheriting from AbstractUser. As a result, the settings in the settings.py file
-have also been updated to indicate to Django what default model the added entry should use (AUTH_USER_MODEL),
-◦ WorkLog: a model supporting the work time registration module in the project. Supports attributes such as:
-▪ start_time: contains the date and time of starting work,
-▪ end_time: contains the date and time when the work ended,
-▪ tasks: description of completed tasks, used when recording the end of working time,
-▪ state: activity status of the work log, by default it has the status True. The status is changed to False when you
-submit an application for no event or correction of working time,
-▪ name: log name. By default, it is assigned the value "Working time registration"
-▪ employee: user assignment with cascade deletion.
-◦ TeamUser: a model connecting the User and Team models with a many-to-many relationship. The model has an additional '
-role' field that describes the position of a given user within the assigned team.
-◦ Team: a model that supports the following attributes:
-▪ name: name of the team to which the user can be assigned,
-▪ description: contains a description of the team.
-◦ OffWorkLog: model supporting the leave module in the project. Supports attributes such as:
-▪ start_date: contains the start date of the holiday,
-▪ end_date: contains the end date of the holiday,
-▪ name: log name. By default it is assigned the value "Vacation leave"
-▪ status: contains the current status of the leave request,
-▪ reason: contains a description in a situation where the acceptor rejects the submitted application,
-▪ employee: user assignment with cascading deletion,
-▪ amount_of_leave: assignment to a model with a specific number of leave days in a given year with cascading deletion.
-◦ AmountOfLeave: a model that handles the number of vacation days allocated to a given user in a given year. Supports
-attributes such as:
-▪ year: contains the year to which the number of vacation days is assigned,
-▪ days_to_use: contains the number of vacation days that the user can use,
-▪ employee: user assignment with cascade deletion.
-◦ UsedDays: a model that handles the number of days used by an employee. Supports the following attributes:
-▪ used_days: number of days used,
-▪ employee: user assignment with cascade deletion.
-• Date and time support. Used datetime and timedelta libraries for date and time manipulation.
-• Email handling: EmailMultiAlternatives was used to send emails from the system.
-• Calendar: using the Poland class from the workalendar.europe library to handle non-working days specific to Poland.
+
+##### The following models were used in the project:
+
+1. User: overwritten with its own model inheriting from AbstractUser. As a result, the settings in the settings.py file
+   have also been updated to indicate to Django what default model the added entry should use (AUTH_USER_MODEL),
+2. WorkLog: a model supporting the work time registration module in the project. Supports attributes such as:
+
+* start_time: contains the date and time of starting work,
+* end_time: contains the date and time when the work ended,
+* tasks: description of completed tasks, used when recording the end of working time,
+* state: activity status of the work log, by default it has the status True. The status is changed to False when you
+  submit an application for no event or correction of working time,
+* name: log name. By default, it is assigned the value "Working time registration"
+* employee: user assignment with cascade deletion.
+
+3. TeamUser:
+   A model connecting the User and Team models with a many-to-many relationship. The model has an additional 'role'
+   field that describes the position of a given user within the assigned team.
+4. Team: a model that supports the following attributes:
+
+* name: name of the team to which the user can be assigned,
+* description: contains a description of the team.
+
+5. OffWorkLog: model supporting the leave module in the project. Supports attributes such as:
+
+* start_date: contains the start date of the holiday,
+* end_date: contains the end date of the holiday,
+* name: log name. By default it is assigned the value "Vacation leave"
+* status: contains the current status of the leave request,
+* reason: contains a description in a situation where the acceptor rejects the submitted application,
+* employee: user assignment with cascading deletion,
+  *amount_of_leave: assignment to a model with a specific number of leave days in a given year with cascading deletion.
+
+6. AmountOfLeave: a model that handles the number of vacation days allocated to a given user in a given year. Supports
+   attributes such as:
+* year: contains the year to which the number of vacation days is assigned,
+* days_to_use: contains the number of vacation days that the user can use,
+* employee: user assignment with cascade deletion.
+7. UsedDays: a model that handles the number of days used by an employee. Supports the following attributes:
+* used_days: number of days used,
+* employee: user assignment with cascade deletion.
+
+##### Date and time support 
+
+Used datetime and timedelta libraries for date and time manipulation.
+
+##### Email handling 
+
+EmailMultiAlternatives was used to send emails from the system.
+
+##### Calendar 
+
+Using the Poland class from the workalendar.europe library to handle non-working days specific to Poland.
 
 #### 2. Installation instructions
 
@@ -363,102 +411,102 @@ password" button.
 #### Usage scenarios
 
 **1. Registration of the start and end of working time**
-   • The user logs in to the system using the assigned login and password
-   • In the application, in the menu in the upper left corner, select the "Working time" tab
-   • In the next window, the user selects the "Getting started" tile
-   • After verifying the date and time of work start, the user selects the "Record time" button, after correct
-   registration of working time, he is transferred to the "Working time" module
-   • User selects the "End of work" tile
-   • After verifying the start and end date of work, complete the "completed tasks" field and select the "Record time"
-   button. After correct registration of the end of working time, the user is transferred to the "Working time" module.
+• The user logs in to the system using the assigned login and password
+• In the application, in the menu in the upper left corner, select the "Working time" tab
+• In the next window, the user selects the "Getting started" tile
+• After verifying the date and time of work start, the user selects the "Record time" button, after correct
+registration of working time, he is transferred to the "Working time" module
+• User selects the "End of work" tile
+• After verifying the start and end date of work, complete the "completed tasks" field and select the "Record time"
+button. After correct registration of the end of working time, the user is transferred to the "Working time" module.
 
 **2. Submitting an application for correction of working time**
-   • The user logs in to the system using the assigned login and password
-   • In the application, in the menu in the upper left corner, select the "Working time" tab
-   • The user selects the "Working time correction" tile
-   • Enter the working time correction date. Based on this, the system will find the appropriate record in the database.
-   • A form is displayed to the user in which he or she can use the calendar icon to correct the date and working time.
-   • After making the correction, the user selects the "Send application" button. The application is sent to the
-   supervisor for approval, and at the same time an e-mail is sent to him that the application is awaiting approval.
+• The user logs in to the system using the assigned login and password
+• In the application, in the menu in the upper left corner, select the "Working time" tab
+• The user selects the "Working time correction" tile
+• Enter the working time correction date. Based on this, the system will find the appropriate record in the database.
+• A form is displayed to the user in which he or she can use the calendar icon to correct the date and working time.
+• After making the correction, the user selects the "Send application" button. The application is sent to the
+supervisor for approval, and at the same time an e-mail is sent to him that the application is awaiting approval.
 
 **3. Submitting a no-event application**
-   • The user logs in to the system using the assigned login and password
-   • In the application, in the menu in the upper left corner, select the "Working time" tab
-   • User selects the "No event" tile
-   • In the form, use the calendar icon to indicate the date and time of the start and end of working time and complete
-   the "Completed tasks" field. After completing the form correctly, select the "Send application" button. The
-   application is sent to the supervisor for approval, and at the same time an e-mail is sent to him that the
-   application is awaiting approval.
+• The user logs in to the system using the assigned login and password
+• In the application, in the menu in the upper left corner, select the "Working time" tab
+• User selects the "No event" tile
+• In the form, use the calendar icon to indicate the date and time of the start and end of working time and complete
+the "Completed tasks" field. After completing the form correctly, select the "Send application" button. The
+application is sent to the supervisor for approval, and at the same time an e-mail is sent to him that the
+application is awaiting approval.
 
 **4. User working time reports and approved applications**
-   • The user logs in to the system using the assigned login and password
-   • In the application, in the menu in the upper left corner, select the "Working time" tab
-   • User selects the "Reports" tile
-   • In the form, complete the date range for which the working time report is to be generated, then select the "
-   Download data" button.
-   • The new window presents the user's working hours in the previously indicated period. Only registered start and end
-   records and supervisor-approved correction requests and no events are displayed.
+• The user logs in to the system using the assigned login and password
+• In the application, in the menu in the upper left corner, select the "Working time" tab
+• User selects the "Reports" tile
+• In the form, complete the date range for which the working time report is to be generated, then select the "
+Download data" button.
+• The new window presents the user's working hours in the previously indicated period. Only registered start and end
+records and supervisor-approved correction requests and no events are displayed.
 
 **5. Acceptance of requests for correction of working time and no event**
-   • A user with the "team_lead" role logs in to the system using the assigned login and password
-   • In the application, in the menu in the upper left corner, select the "Working time" tab
-   • The user selects the "Acceptances" tile
-   • A list of all records that have been submitted for approval is displayed, including a description of the type of
-   request being submitted in the "Application Type" column. The user selects the "Accept" button to accept the
-   submitted application of the subordinate employee.
+• A user with the "team_lead" role logs in to the system using the assigned login and password
+• In the application, in the menu in the upper left corner, select the "Working time" tab
+• The user selects the "Acceptances" tile
+• A list of all records that have been submitted for approval is displayed, including a description of the type of
+request being submitted in the "Application Type" column. The user selects the "Accept" button to accept the
+submitted application of the subordinate employee.
 
 **6. Submitting an application for leave by the employee**
-   • The user logs in to the system using the assigned login and password
-   • In the application, in the menu in the upper left corner, select the "Holidays" tab
-   • The user selects the "Vacation request" tile
-   • The user indicates the start and end date of the leave in the form and then selects the "Send application" button.
-   The application is sent to the supervisor for approval, and at the same time an e-mail is sent to him that the
-   application is awaiting approval.
+• The user logs in to the system using the assigned login and password
+• In the application, in the menu in the upper left corner, select the "Holidays" tab
+• The user selects the "Vacation request" tile
+• The user indicates the start and end date of the leave in the form and then selects the "Send application" button.
+The application is sent to the supervisor for approval, and at the same time an e-mail is sent to him that the
+application is awaiting approval.
 
 **7. User working time reports and approved applications**
-   • The user logs in to the system using the assigned login and password
-   • In the application, in the menu in the upper left corner, select the "Holidays" tab
-   • User selects the "Reports" tile
-   • The new window presents all submitted leave applications along with the status they received in the process of
-   approval by the superior.
+• The user logs in to the system using the assigned login and password
+• In the application, in the menu in the upper left corner, select the "Holidays" tab
+• User selects the "Reports" tile
+• The new window presents all submitted leave applications along with the status they received in the process of
+approval by the superior.
 
 **8. Acceptance of leave requests**
-   • A user with the "team_lead" role logs in to the system using the assigned login and password
-   • In the application, in the menu in the upper left corner, select the "Holidays" tab
-   • The user selects the "Acceptances" tile
-   • A list of all records that have been submitted for approval is displayed. The user selects the "Accept" button to
-   accept the submitted application of the subordinate employee.
+• A user with the "team_lead" role logs in to the system using the assigned login and password
+• In the application, in the menu in the upper left corner, select the "Holidays" tab
+• The user selects the "Acceptances" tile
+• A list of all records that have been submitted for approval is displayed. The user selects the "Accept" button to
+accept the submitted application of the subordinate employee.
 
 #### Special features
 
 **1. Sending e-mails**
-   Automatically notify your manager of new approval requests using the EmailMultiAlternatives feature in Django. The
-   following solution has been implemented so that if a message was sent incorrectly in the standard format, it could be
-   displayed in HTML format.
+Automatically notify your manager of new approval requests using the EmailMultiAlternatives feature in Django. The
+following solution has been implemented so that if a message was sent incorrectly in the standard format, it could be
+displayed in HTML format.
 
 **2. Calculation of vacation days**
-   Using the workalendar package to precisely calculate vacation days that will be deducted from the employee's pool
-   after submitting the application, including working days and holidays.
+Using the workalendar package to precisely calculate vacation days that will be deducted from the employee's pool
+after submitting the application, including working days and holidays.
 
 ### 4. FAQ (Frequently asked questions)
 
 **1. I get an error when trying to install dependencies. Why?**
-   If an error message is displayed informing that one of the dependencies is not working properly, you should run the
-   requirements.txt file yourself, this is a file saved in the system notebook, and then remove the version number from
-   the selected dependency that generates the problem, then save the file and run the install command again. This will
-   install the latest possible version of the component that caused the problem.
+If an error message is displayed informing that one of the dependencies is not working properly, you should run the
+requirements.txt file yourself, this is a file saved in the system notebook, and then remove the version number from
+the selected dependency that generates the problem, then save the file and run the install command again. This will
+install the latest possible version of the component that caused the problem.
 
 **2. Can I install a virtual environment without using the console?**
-   Yes. Installation of the virtual environment is also possible from the IDE level used by the user. To install the
-   virtual environment (in the example of PyCharm), select the Python version in the lower right corner of the IDE (for
-   example: Python 3.10). In the expanded context menu, select the Add New Interpreter option, then Add Local
-   Interpreter, set the Environment option to New, enter the location where the virtual environment will be created, set
-   the Base interpreter option to Python 3.10, then select the OK button. The IDE will create the virtual environment
-   automatically.
+Yes. Installation of the virtual environment is also possible from the IDE level used by the user. To install the
+virtual environment (in the example of PyCharm), select the Python version in the lower right corner of the IDE (for
+example: Python 3.10). In the expanded context menu, select the Add New Interpreter option, then Add Local
+Interpreter, set the Environment option to New, enter the location where the virtual environment will be created, set
+the Base interpreter option to Python 3.10, then select the OK button. The IDE will create the virtual environment
+automatically.
 
 **3. Port 8000 indicated in the hyperlink is occupied by other processes in the system, how to run the application?**
-   If the system currently occupies port 8000, enter the following in the console:
-   python manage.py runserver 8888 to run the application, e.g. on port 8888.
+If the system currently occupies port 8000, enter the following in the console:
+python manage.py runserver 8888 to run the application, e.g. on port 8888.
 
 
 
