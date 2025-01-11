@@ -411,7 +411,7 @@ class OffWorkLogApplicationView(LoginRequiredMixin, BaseContextData, CreateView)
         initial_end_date = form.cleaned_data['end_date']
         end_date = initial_end_date.date()
 
-        check_vacation_days = cal.get_working_days_delta(start_date, end_date) + 1
+        check_vacation_days = cal.get_working_days_delta(start_date, end_date)
 
         days = AmountOfLeave.objects.filter(employee=self.request.user)
         total_days = sum(day.days_to_use for day in days)
@@ -526,7 +526,7 @@ class OffWorkLogVacationRejectUpdateView(LoginRequiredMixin, UserPassesTestMixin
         start_date = off_work_log.start_date
         end_date = off_work_log.end_date
 
-        numbers_of_days = cal.get_working_days_delta(start_date, end_date) + 1
+        numbers_of_days = cal.get_working_days_delta(start_date, end_date)
         try:
             used_days = UsedDays.objects.get(employee=employee)
             used_days.used_days -= numbers_of_days

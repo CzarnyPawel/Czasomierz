@@ -329,7 +329,7 @@ def test_off_worklog_application_view(client, create_user_with_another_roles):
                            {'start_date': now().date() + timedelta(days=7),
                             'end_date': now().date() + timedelta(days=8)})
     assert response.status_code == 302
-    assert UsedDays.objects.get(employee=employee1).used_days == 11
+    assert UsedDays.objects.get(employee=employee1).used_days == 10
     assert len(mail.outbox) == 1
 
 
